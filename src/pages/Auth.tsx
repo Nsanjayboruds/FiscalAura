@@ -77,7 +77,7 @@ const Auth = () => {
       <div className="fixed inset-0 glow-spot bottom-[-20%] left-[-10%] -z-10" style={{ "--glow-color": "hsl(var(--secondary) / 0.1)" } as any} />
 
       <div className="w-full max-w-md relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
@@ -93,7 +93,7 @@ const Auth = () => {
         <TiltCard>
           <Card className="glass-darker border-white/10 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -z-10 group-hover:bg-primary/20 transition-colors" />
-            
+
             <CardHeader className="text-center pb-6">
               <div className="flex justify-center mb-4">
                 <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
@@ -107,35 +107,35 @@ const Auth = () => {
                 {forgotPassword
                   ? "We'll send you a secure link to reset."
                   : isSignUp
-                  ? "Start your autonomous tax journey."
-                  : "Sign in to your financial ecosystem."}
+                    ? "Start your autonomous tax journey."
+                    : "Sign in to your financial ecosystem."}
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleAuth} className="space-y-6">
                 {isSignUp && !forgotPassword && (
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Full Name</Label>
-                    <Input 
-                      id="name" 
-                      value={fullName} 
-                      onChange={(e) => setFullName(e.target.value)} 
-                      placeholder="Rahul Sharma" 
-                      required 
+                    <Input
+                      id="name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Rahul Sharma"
+                      required
                       className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary focus:border-primary transition-all"
                     />
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email Domain</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    placeholder="you@example.com" 
-                    required 
+                  <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
                     className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
@@ -165,10 +165,10 @@ const Auth = () => {
                 )}
 
                 <Magnetic>
-                  <Button 
-                    type="submit" 
-                    className="w-full rounded-xl h-14 font-black text-lg shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all border-0" 
-                    style={{ background: "var(--gradient-primary)" }} 
+                  <Button
+                    type="submit"
+                    className="w-full rounded-xl h-14 font-black text-lg shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all border-0"
+                    style={{ background: "var(--gradient-primary)" }}
                     disabled={loading}
                   >
                     {loading ? "Authenticating..." : forgotPassword ? "Reset Access" : isSignUp ? "Initialize Account" : "Enter Dashboard"}
@@ -178,8 +178,8 @@ const Auth = () => {
 
               <div className="mt-8 space-y-4 text-center">
                 {!forgotPassword && (
-                  <button 
-                    onClick={() => setForgotPassword(true)} 
+                  <button
+                    onClick={() => setForgotPassword(true)}
                     className="text-sm font-bold text-primary/70 hover:text-primary transition-colors hover:underline"
                   >
                     Forgot access key?
@@ -187,8 +187,8 @@ const Auth = () => {
                 )}
                 <div>
                   {forgotPassword ? (
-                    <button 
-                      onClick={() => setForgotPassword(false)} 
+                    <button
+                      onClick={() => setForgotPassword(false)}
                       className="text-sm font-bold text-primary hover:underline inline-flex items-center gap-2"
                     >
                       <ArrowLeft className="h-4 w-4" /> Back to primary login
@@ -196,8 +196,8 @@ const Auth = () => {
                   ) : (
                     <p className="text-sm font-medium text-muted-foreground">
                       {isSignUp ? "Already part of the ecosystem?" : "New to the intelligence?"}{" "}
-                      <button 
-                        onClick={() => setIsSignUp(!isSignUp)} 
+                      <button
+                        onClick={() => setIsSignUp(!isSignUp)}
                         className="text-primary hover:underline font-black ml-1"
                       >
                         {isSignUp ? "Sign In" : "Join Now"}

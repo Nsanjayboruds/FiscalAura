@@ -24,8 +24,8 @@ serve(async (req) => {
 
     const { documentId, fileContent, fileName } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
 
     const systemPrompt = `You are a financial document analyzer for Indian taxpayers. Extract structured financial data from the provided document content.
 
@@ -48,14 +48,14 @@ Return a JSON object with these fields (use 0 for missing values):
 
 Be thorough in extracting all financial figures. If the document is an image or unclear, do your best to extract what you can.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Analyze this document (${fileName}):\n\n${fileContent}` },
@@ -104,7 +104,7 @@ Be thorough in extracting all financial figures. If the document is an image or 
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`AI gateway error: ${response.status}`);
+      throw new Error(`AI error: ${response.status}`);
     }
 
     const aiResult = await response.json();
