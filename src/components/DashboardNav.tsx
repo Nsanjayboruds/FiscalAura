@@ -2,13 +2,14 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { LogOut, LayoutDashboard, Upload, Brain, Landmark, FileText, User } from "lucide-react";
+import { LogOut, LayoutDashboard, Upload, Brain, Landmark, FileText, User, Activity } from "lucide-react";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/documents", label: "Documents", icon: Upload },
   { path: "/tax-analysis", label: "Tax Analysis", icon: Brain },
   { path: "/schemes", label: "Schemes", icon: Landmark },
+  { path: "/simulator", label: "Simulator", icon: Activity },
   { path: "/tax-summary", label: "Summary", icon: FileText },
   { path: "/profile", label: "Profile", icon: User },
 ];

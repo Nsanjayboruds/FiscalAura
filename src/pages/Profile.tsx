@@ -20,7 +20,7 @@ const Profile = () => {
   const [ageGroup, setAgeGroup] = useState("");
   const [taxRegime, setTaxRegime] = useState("");
   const [saving, setSaving] = useState(false);
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Array<{ id: string; file_name: string; status: string }>>([]);
 
   useEffect(() => {
     if (profile) {
@@ -50,8 +50,9 @@ const Profile = () => {
       });
       toast({ title: "Profile updated", description: "Your changes have been saved." });
       refetchProfile();
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      const e = error as Error;
+      toast({ title: "Error", description: e.message, variant: "destructive" });
     }
     setSaving(false);
   };
@@ -61,7 +62,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="fixed inset-0 mesh-gradient opacity-[0.03] pointer-events-none -z-20" />
-      <div className="absolute top-[-10%] left-[-10%] glow-spot -z-10" style={{ "--glow-color": "hsl(var(--primary) / 0.1)" } as any} />
+      <div className="absolute top-[-10%] left-[-10%] glow-spot -z-10" style={{ "--glow-color": "hsl(var(--primary) / 0.1)" } as React.CSSProperties} />
       
       <DashboardNav />
       <div className="container py-12 max-w-4xl relative z-10">
