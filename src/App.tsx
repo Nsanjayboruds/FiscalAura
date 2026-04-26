@@ -16,6 +16,8 @@ import TaxSummary from "./pages/TaxSummary";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
+import Simulator from "./pages/Simulator";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,6 +37,7 @@ const App = () => (
           <Route path="/taxbuddy" element={<TaxBuddy />} />
           <Route path="/schemes" element={<Schemes />} />
           <Route path="/tax-summary" element={<TaxSummary />} />
+          <Route path="/simulator" element={<Simulator />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
