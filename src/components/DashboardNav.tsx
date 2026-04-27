@@ -27,10 +27,36 @@ const DashboardNav = () => {
     <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link to="/dashboard" className="flex items-center gap-2">
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-md focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            onClick={() => {
+              if (location.pathname === "/dashboard") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              } else {
+                navigate("/dashboard");
+                requestAnimationFrame(() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (location.pathname === "/dashboard") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                  navigate("/dashboard");
+                  requestAnimationFrame(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  });
+                }
+              }
+            }}
+          >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-lg">F</div>
             <span className="font-display font-bold text-xl text-foreground hidden sm:inline">FiscalAura</span>
-          </Link>
+          </button>
           <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <Link key={item.path} to={item.path}>

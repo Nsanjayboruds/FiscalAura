@@ -39,7 +39,12 @@ const Index = () => {
         className="fixed top-0 left-0 right-0 z-50 px-6 py-4"
       >
         <div className="max-w-7xl mx-auto glass rounded-full px-8 py-3 flex items-center justify-between border-white/10 shadow-2xl backdrop-blur-2xl">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate("/")}>
+          <div
+            className="flex items-center gap-2 group cursor-pointer"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
             <div className="p-2 rounded-xl bg-primary shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
