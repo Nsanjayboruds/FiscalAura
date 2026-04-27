@@ -28,12 +28,29 @@ const DashboardNav = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <button
-            className="flex items-center gap-2 focus:outline-none"
+            type="button"
+            className="flex items-center gap-2 rounded-md focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => {
               if (location.pathname === "/dashboard") {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               } else {
                 navigate("/dashboard");
+                requestAnimationFrame(() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (location.pathname === "/dashboard") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                  navigate("/dashboard");
+                  requestAnimationFrame(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  });
+                }
               }
             }}
           >
