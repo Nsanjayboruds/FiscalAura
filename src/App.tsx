@@ -15,8 +15,8 @@ import Schemes from "./pages/Schemes";
 import TaxSummary from "./pages/TaxSummary";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-
 import Simulator from "./pages/Simulator";
+import TaxOCR from "./pages/TaxOCR";  // ← ADD THIS IMPORT
 
 const queryClient = new QueryClient();
 
@@ -39,6 +39,7 @@ const App = () => (
           <Route path="/tax-summary" element={<TaxSummary />} />
           <Route path="/simulator" element={<Simulator />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/tax-ocr" element={<TaxOCR />} />  {/* ← ADD THIS ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
