@@ -1,13 +1,9 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/csv-mongo-dreams/backend/middleware"
 	"github.com/csv-mongo-dreams/backend/services"
@@ -66,16 +62,7 @@ func (h *TaxAnalysisHandler) RunAnalysis(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// Call Gemini API directly instead of Edge Function
-	apiKey := os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
-		jsonError(w, "GEMINI_API_KEY is not configured", http.StatusInternalServerError)
-		return
-	}
-	model := strings.TrimSpace(os.Getenv("GEMINI_MODEL"))
-	if model == "" {
-		model = "gemini-3.5-flash-lite"
-	}
+	// AI Analysis using Unified AIClient
 
 	systemPrompt := `You are an expert Indian tax consultant AI. Analyze the user's financial data and provide comprehensive tax guidance for the Indian tax system (FY 2025-26).
 
@@ -109,47 +96,15 @@ Provide actionable, specific advice. YOU MUST RETURN ONLY VALID JSON matching th
 	profileJSON, _ := json.MarshalIndent(body.Profile, "", "  ")
 	userPrompt := fmt.Sprintf("User Profile:\n%s\n\nFinancial Data:\n%s\n\nProvide complete tax analysis with regime comparison, deduction suggestions, and scheme recommendations.", string(profileJSON), string(finDataJSON))
 
-	payload := map[string]interface{}{
-		"model": model,
-		"messages": []map[string]string{
-			{"role": "system", "content": systemPrompt},
-			{"role": "user", "content": userPrompt},
-		},
-		"response_format": map[string]string{"type": "json_object"},
-	}
-
-	reqBody, _ := json.Marshal(payload)
-	httpReq, _ := http.NewRequest("POST", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", bytes.NewReader(reqBody))
-	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(httpReq)
+	aiClient := services.NewAIClient()
+	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, nil, true)
 	if err != nil {
-		jsonError(w, "AI request failed: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	respBody, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode >= 400 {
-		jsonError(w, fmt.Sprintf("AI error %d: %s", resp.StatusCode, string(respBody)), http.StatusInternalServerError)
-		return
-	}
-
-	var parsed struct {
-		Choices []struct {
-			Message struct {
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
-	}
-	if err := json.Unmarshal(respBody, &parsed); err != nil || len(parsed.Choices) == 0 {
-		jsonError(w, "Failed to parse AI response", http.StatusInternalServerError)
+		jsonError(w, "AI Failover Exhausted: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	var resultData map[string]interface{}
-	if err := json.Unmarshal([]byte(parsed.Choices[0].Message.Content), &resultData); err != nil {
+	if err := json.Unmarshal([]byte(responseStr), &resultData); err != nil {
 		jsonError(w, "Invalid JSON from AI", http.StatusInternalServerError)
 		return
 	}
@@ -170,7 +125,7 @@ Provide actionable, specific advice. YOU MUST RETURN ONLY VALID JSON matching th
 	}
 
 	existing, _ := h.SB.QuerySingle("tax_analyses", "select=id&financial_year=eq."+fy+"&user_id=eq."+userID, jwt)
-	
+
 	if existing != nil && len(existing) > 4 { // if found and not empty json
 		var existingData map[string]interface{}
 		json.Unmarshal(existing, &existingData)

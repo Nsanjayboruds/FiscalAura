@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"strings"
+
+	"github.com/csv-mongo-dreams/backend/services"
 )
 
 type TaxBuddyHandler struct{}
@@ -42,11 +41,7 @@ func (h *TaxBuddyHandler) GenerateStrategy(w http.ResponseWriter, r *http.Reques
 	alerts := buildAlerts(req)
 	contextSummary := buildContextSummary(req)
 
-	apiKey := os.Getenv("GROQ_API_KEY")
-	if apiKey == "" {
-		jsonError(w, "GROQ_API_KEY is not configured", http.StatusInternalServerError)
-		return
-	}
+	// AI Generation using Unified AIClient
 
 	systemPrompt := `Role: You are "TaxBuddy," an intelligent, empathetic, and witty AI Tax Assistant helping Pranav with Indian taxes for FY 2025-26.
 
@@ -81,9 +76,10 @@ Backend verdict:
 
 Now generate the final user-facing strategy in the exact required format.`, contextSummary, verdict, reason, alerts)
 
-	aiText, err := callGroq(apiKey, systemPrompt, userPrompt)
+	aiClient := services.NewAIClient()
+	aiText, err := aiClient.ChatCompletion("groq", systemPrompt, userPrompt, nil, false)
 	if err != nil {
-		jsonError(w, "taxbuddy generation failed: "+err.Error(), http.StatusBadGateway)
+		jsonError(w, "AI Failover Exhausted: "+err.Error(), http.StatusBadGateway)
 		return
 	}
 	aiText = sanitizeTaxBuddyOutput(aiText)
@@ -196,68 +192,4 @@ func buildContextSummary(req taxBuddyRequest) string {
 - Estimated annual income: ₹%.0f
 - Has agriculture income: %t
 - Director in a company: %t`, req.Age, req.ResStatus, req.HasBusiness, req.HasCapGains, req.EstIncome, req.HasAgri, req.IsDirector)
-}
-
-func callGroq(apiKey, systemPrompt, userPrompt string) (string, error) {
-	model := strings.TrimSpace(os.Getenv("GROQ_MODEL"))
-	if model == "" {
-		model = "qwen/qwen3.6-27b"
-	}
-
-	payload := map[string]interface{}{
-		"model": model,
-		"messages": []map[string]string{
-			{"role": "system", "content": systemPrompt},
-			{"role": "user", "content": userPrompt},
-		},
-		"temperature": 0.5,
-		"max_tokens":  1200,
-	}
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return "", err
-	}
-
-	httpReq, err := http.NewRequest("POST", "https://api.groq.com/openai/v1/chat/completions", bytes.NewReader(body))
-	if err != nil {
-		return "", err
-	}
-	httpReq.Header.Set("Authorization", "Bearer "+apiKey)
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(httpReq)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode >= 400 {
-		if resp.StatusCode == 429 {
-			return "", fmt.Errorf("groq quota exceeded (model %s): add credits/billing and retry", model)
-		}
-		return "", fmt.Errorf("groq model %s error %d: %s", model, resp.StatusCode, string(respBody))
-	}
-
-	var parsed struct {
-		Choices []struct {
-			Message struct {
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
-	}
-	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return "", err
-	}
-
-	if len(parsed.Choices) == 0 || strings.TrimSpace(parsed.Choices[0].Message.Content) == "" {
-		return "", fmt.Errorf("empty groq response for model %s", model)
-	}
-
-	return parsed.Choices[0].Message.Content, nil
 }
