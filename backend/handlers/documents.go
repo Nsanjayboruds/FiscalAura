@@ -232,7 +232,7 @@ Be thorough in extracting all financial figures. YOU MUST RETURN ONLY VALID JSON
 	}
 
 	userPrompt := fmt.Sprintf("Analyze this document (%s):\n\n%s", fileName, content)
-	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, tools, false)
+	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, tools, false, true)
 
 	if err != nil {
 		fmt.Printf("AI Failover Exhausted: %v\n", err)

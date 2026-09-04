@@ -97,7 +97,7 @@ Provide actionable, specific advice. YOU MUST RETURN ONLY VALID JSON matching th
 	userPrompt := fmt.Sprintf("User Profile:\n%s\n\nFinancial Data:\n%s\n\nProvide complete tax analysis with regime comparison, deduction suggestions, and scheme recommendations.", string(profileJSON), string(finDataJSON))
 
 	aiClient := services.NewAIClient()
-	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, nil, true)
+	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, nil, true, false)
 	if err != nil {
 		jsonError(w, "AI Failover Exhausted: "+err.Error(), http.StatusInternalServerError)
 		return

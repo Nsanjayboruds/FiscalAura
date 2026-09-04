@@ -60,12 +60,15 @@ func (c *AIClient) getProviderConfig(provider string) (AIProviderConfig, error) 
 	return AIProviderConfig{}, fmt.Errorf("unknown AI provider: %s", provider)
 }
 
-func (c *AIClient) ChatCompletion(preferredProvider, systemPrompt, userPrompt string, tools []map[string]interface{}, requireJSON bool) (string, error) {
+func (c *AIClient) ChatCompletion(preferredProvider, systemPrompt, userPrompt string, tools []map[string]interface{}, requireJSON bool, disableFailover bool) (string, error) {
 	providers := []string{preferredProvider}
-	if preferredProvider == "gemini" {
-		providers = append(providers, "groq")
-	} else {
-		providers = append(providers, "gemini")
+	
+	if !disableFailover {
+		if preferredProvider == "gemini" {
+			providers = append(providers, "groq")
+		} else {
+			providers = append(providers, "gemini")
+		}
 	}
 
 	var lastErr error

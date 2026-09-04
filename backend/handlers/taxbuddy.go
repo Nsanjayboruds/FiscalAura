@@ -77,7 +77,7 @@ Backend verdict:
 Now generate the final user-facing strategy in the exact required format.`, contextSummary, verdict, reason, alerts)
 
 	aiClient := services.NewAIClient()
-	aiText, err := aiClient.ChatCompletion("groq", systemPrompt, userPrompt, nil, false)
+	aiText, err := aiClient.ChatCompletion("groq", systemPrompt, userPrompt, nil, false, false)
 	if err != nil {
 		jsonError(w, "AI Failover Exhausted: "+err.Error(), http.StatusBadGateway)
 		return
