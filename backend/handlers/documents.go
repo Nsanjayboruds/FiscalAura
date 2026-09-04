@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -124,35 +125,31 @@ func (h *DocumentsHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var content string
-	if strings.Contains(docData.FileType, "text") || strings.Contains(docData.FileType, "csv") {
-		content = string(fileBytes)
-	} else if strings.Contains(docData.FileType, "pdf") {
-		tmpFile, err := os.CreateTemp("", "tax-doc-*.pdf")
-		if err == nil {
-			tmpFile.Write(fileBytes)
-			tmpFile.Close()
-			defer os.Remove(tmpFile.Name())
+	// Use Gemini's native multimodal API for PDFs (no pdftotext needed)
+	var extractedData map[string]interface{}
+	var analysisErr error
 
-			out, err := exec.Command("pdftotext", tmpFile.Name(), "-").Output()
-			if err == nil && len(out) > 0 {
-				content = string(out)
-			} else {
-				content = fmt.Sprintf("[PDF extraction failed: %s, type: %s, size: %d bytes]", docData.FileName, docData.FileType, docData.FileSize)
-			}
-		} else {
-			content = fmt.Sprintf("[Binary file: %s, type: %s, size: %d bytes]", docData.FileName, docData.FileType, docData.FileSize)
-		}
+	if strings.Contains(docData.FileType, "pdf") {
+		// Send raw PDF bytes directly to Gemini - it natively reads PDFs
+		extractedData, analysisErr = analyzeWithGeminiNativeBytes(docData.FileName, fileBytes, docData.FileType)
 	} else {
-		content = fmt.Sprintf("[Binary file: %s, type: %s, size: %d bytes]",
-			docData.FileName, docData.FileType, docData.FileSize)
+		// For text/CSV: extract text content and send
+		var textContent string
+		if strings.Contains(docData.FileType, "text") || strings.Contains(docData.FileType, "csv") {
+			textContent = string(fileBytes)
+		} else {
+			textContent = fmt.Sprintf("[Binary file: %s, type: %s, size: %d bytes]", docData.FileName, docData.FileType, docData.FileSize)
+		}
+		extractedData, analysisErr = analyzeWithGeminiNative(docData.FileName, textContent, nil)
 	}
 
-	// Call Groq API directly from backend instead of Edge Function
-	extractedData, err := analyzeDocumentWithGroq(docData.FileName, content)
-	if err != nil {
-		jsonError(w, "analysis failed: "+err.Error(), http.StatusInternalServerError)
-		return
+	if analysisErr != nil {
+		fmt.Printf("Gemini analysis error: %v\n", analysisErr)
+		extractedData = map[string]interface{}{
+			"document_type": "Unknown Document",
+			"gross_salary":  0,
+			"key_findings":  []string{"AI analysis failed: " + analysisErr.Error()},
+		}
 	}
 
 	// Update document record in Supabase
@@ -172,85 +169,133 @@ func (h *DocumentsHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func analyzeDocumentWithGroq(fileName, content string) (map[string]interface{}, error) {
-	aiClient := services.NewAIClient()
+func analyzeDocumentWithGroq(fileName string, content string) (map[string]interface{}, error) {
+	// For text/CSV files: sends textContent. For PDF: not used (fileBytes used instead).
+	return analyzeWithGeminiNative(fileName, content, nil)
+}
 
-	systemPrompt := `You are a financial document analyzer for Indian taxpayers. Extract structured financial data from the provided document content.
+// analyzeWithGeminiNativeBytes uses Gemini's multimodal API with raw PDF bytes.
+// Called from the Analyze handler directly for PDF files.
+func analyzeWithGeminiNativeBytes(fileName string, fileBytes []byte, mimeType string) (map[string]interface{}, error) {
+	return analyzeWithGeminiNative(fileName, "", fileBytes)
+}
 
-Return a JSON object with these fields (use 0 for missing values):
-- document_type: string (e.g., "Form 16", "Salary Slip", "Investment Proof", "Bank Statement", "Other")
-- employer_name: string or null
-- financial_year: string (e.g., "2025-26")
-- gross_salary: number
-- hra_received: number
-- lta_received: number
-- other_income: number
-- deductions_80c: number (PPF, ELSS, LIC, etc.)
-- deductions_80d: number (health insurance)
-- deductions_80e: number (education loan interest)
-- deductions_80g: number (donations)
-- deductions_nps: number (NPS contributions)
-- professional_tax: number
-- tds_deducted: number
-- key_findings: string[] (list of important observations)
+func analyzeWithGeminiNative(fileName, textContent string, fileBytes []byte) (map[string]interface{}, error) {
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("GEMINI_API_KEY is not configured")
+	}
 
-Be thorough in extracting all financial figures. YOU MUST RETURN ONLY VALID JSON.`
+	prompt := `You are a financial document analyzer for Indian taxpayers. Extract structured financial data from this document.
 
-	tools := []map[string]interface{}{
-		{
-			"type": "function",
-			"function": map[string]interface{}{
-				"name":        "extract_financial_data",
-				"description": "Extract structured financial data from the document",
-				"parameters": map[string]interface{}{
-					"type": "object",
-					"properties": map[string]interface{}{
-						"document_type":    map[string]string{"type": "string"},
-						"employer_name":    map[string]string{"type": "string"},
-						"financial_year":   map[string]string{"type": "string"},
-						"gross_salary":     map[string]string{"type": "number"},
-						"hra_received":     map[string]string{"type": "number"},
-						"lta_received":     map[string]string{"type": "number"},
-						"other_income":     map[string]string{"type": "number"},
-						"deductions_80c":   map[string]string{"type": "number"},
-						"deductions_80d":   map[string]string{"type": "number"},
-						"deductions_80e":   map[string]string{"type": "number"},
-						"deductions_80g":   map[string]string{"type": "number"},
-						"deductions_nps":   map[string]string{"type": "number"},
-						"professional_tax": map[string]string{"type": "number"},
-						"tds_deducted":     map[string]string{"type": "number"},
-						"key_findings": map[string]interface{}{
-							"type":  "array",
-							"items": map[string]string{"type": "string"},
-						},
-					},
-					"required":             []string{"document_type", "gross_salary", "key_findings"},
-					"additionalProperties": false,
-				},
-			},
+Return ONLY a valid JSON object (no markdown, no explanation) with these fields (use 0 for missing numeric values, null for missing strings):
+{
+  "document_type": "Form 16 | Salary Slip | Investment Proof | Bank Statement | Other",
+  "employer_name": "string or null",
+  "financial_year": "2025-26",
+  "gross_salary": 0,
+  "hra_received": 0,
+  "lta_received": 0,
+  "other_income": 0,
+  "deductions_80c": 0,
+  "deductions_80d": 0,
+  "deductions_80e": 0,
+  "deductions_80g": 0,
+  "deductions_nps": 0,
+  "professional_tax": 0,
+  "tds_deducted": 0,
+  "key_findings": ["list of important observations"]
+}
+
+Be thorough. Extract ALL financial figures you see. YOU MUST RETURN ONLY VALID JSON.`
+
+	// Build parts for the Gemini request
+	var parts []map[string]interface{}
+
+	if len(fileBytes) > 0 {
+		// Native multimodal: send raw PDF bytes as base64 inline data
+		b64Data := base64.StdEncoding.EncodeToString(fileBytes)
+		parts = []map[string]interface{}{
+			{"text": fmt.Sprintf("Analyze this document named '%s':\n%s", fileName, prompt)},
+			{"inline_data": map[string]string{
+				"mime_type": "application/pdf",
+				"data":      b64Data,
+			}},
+		}
+	} else {
+		// For text/CSV: just send content as text
+		parts = []map[string]interface{}{
+			{"text": fmt.Sprintf("%s\n\nDocument name: %s\n\nDocument content:\n%s", prompt, fileName, textContent)},
+		}
+	}
+
+	payload := map[string]interface{}{
+		"contents": []map[string]interface{}{
+			{"parts": parts},
+		},
+		"generationConfig": map[string]interface{}{
+			"responseMimeType": "application/json",
+			"temperature":      0.1,
 		},
 	}
 
-	userPrompt := fmt.Sprintf("Analyze this document (%s):\n\n%s", fileName, content)
-	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, tools, false, true)
-
+	reqBody, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Printf("AI Failover Exhausted: %v\n", err)
-		return map[string]interface{}{
-			"document_type": "Unknown Document",
-			"gross_salary":  0,
-			"key_findings":  []string{"Could not extract text from binary file or model refused analysis."},
-		}, nil
+		return nil, err
 	}
 
+	model := os.Getenv("GEMINI_MODEL")
+	if model == "" {
+		model = "gemini-3.6-flash"
+	}
+
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, apiKey)
+	httpClient := &http.Client{Timeout: 90 * time.Second}
+	resp, err := httpClient.Post(url, "application/json", strings.NewReader(string(reqBody)))
+	if err != nil {
+		return nil, fmt.Errorf("gemini request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("gemini error %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	// Parse Gemini's native response format
+	var geminiResp struct {
+		Candidates []struct {
+			Content struct {
+				Parts []struct {
+					Text string `json:"text"`
+				} `json:"parts"`
+			} `json:"content"`
+		} `json:"candidates"`
+	}
+
+	if err := json.Unmarshal(respBody, &geminiResp); err != nil || len(geminiResp.Candidates) == 0 {
+		return nil, fmt.Errorf("failed to parse gemini response: %s", string(respBody))
+	}
+
+	text := ""
+	for _, part := range geminiResp.Candidates[0].Content.Parts {
+		text += part.Text
+	}
+
+	// Strip markdown code fences if present
+	text = strings.TrimSpace(text)
+	text = strings.TrimPrefix(text, "```json")
+	text = strings.TrimPrefix(text, "```")
+	text = strings.TrimSuffix(text, "```")
+	text = strings.TrimSpace(text)
+
 	var extractedData map[string]interface{}
-	if err := json.Unmarshal([]byte(responseStr), &extractedData); err != nil {
-		return map[string]interface{}{
-			"document_type": "Unknown Document",
-			"gross_salary":  0,
-			"key_findings":  []string{"Failed to parse AI output."},
-		}, nil
+	if err := json.Unmarshal([]byte(text), &extractedData); err != nil {
+		return nil, fmt.Errorf("invalid JSON from gemini: %s", text)
 	}
 
 	return extractedData, nil
 }
+
+
