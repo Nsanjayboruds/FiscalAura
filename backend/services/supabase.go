@@ -30,7 +30,17 @@ func NewSupabaseClient() *SupabaseClient {
 // ---------- Auth helpers ----------
 
 // ValidateToken calls Supabase auth.getUser with the given JWT to validate it.
+// When MOCK_SUPABASE=true, it accepts tokens in the format "mock-token:<userId>:<email>" locally.
 func (s *SupabaseClient) ValidateToken(token string) (string, string, error) {
+	// Mock mode: accept offline tokens without hitting Supabase
+	if os.Getenv("MOCK_SUPABASE") == "true" && strings.HasPrefix(token, "mock-token:") {
+		parts := strings.SplitN(token, ":", 3)
+		if len(parts) == 3 {
+			return parts[1], parts[2], nil
+		}
+		return "mock-user-id", "mock@example.com", nil
+	}
+
 	req, err := http.NewRequest("GET", s.URL+"/auth/v1/user", nil)
 	if err != nil {
 		return "", "", err
@@ -80,6 +90,9 @@ func (s *SupabaseClient) newRequest(method, url string, body io.Reader, userJWT 
 
 // Query performs a GET on the PostgREST API.
 func (s *SupabaseClient) Query(table, queryParams, userJWT string) (json.RawMessage, error) {
+	if isMockMode() {
+		return s.mockQuery(table, queryParams)
+	}
 	url := s.restURL(table) + "?" + queryParams
 	req, err := s.newRequest("GET", url, nil, userJWT)
 	if err != nil {
@@ -103,6 +116,9 @@ func (s *SupabaseClient) Query(table, queryParams, userJWT string) (json.RawMess
 
 // QuerySingle is like Query but expects a single result.
 func (s *SupabaseClient) QuerySingle(table, queryParams, userJWT string) (json.RawMessage, error) {
+	if isMockMode() {
+		return s.mockQuerySingle(table, queryParams)
+	}
 	url := s.restURL(table) + "?" + queryParams
 	req, err := s.newRequest("GET", url, nil, userJWT)
 	if err != nil {
@@ -130,6 +146,9 @@ func (s *SupabaseClient) QuerySingle(table, queryParams, userJWT string) (json.R
 
 // Count returns the count of rows matching the query.
 func (s *SupabaseClient) Count(table, queryParams, userJWT string) (int, error) {
+	if isMockMode() {
+		return s.mockCount(table, queryParams)
+	}
 	url := s.restURL(table) + "?" + queryParams + "&select=id"
 	req, err := s.newRequest("HEAD", url, nil, userJWT)
 	if err != nil {
@@ -157,6 +176,9 @@ func (s *SupabaseClient) Count(table, queryParams, userJWT string) (int, error) 
 
 // Insert inserts a record and returns the result.
 func (s *SupabaseClient) Insert(table string, data interface{}, userJWT string) (json.RawMessage, error) {
+	if isMockMode() {
+		return s.mockInsert(table, data)
+	}
 	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -183,6 +205,9 @@ func (s *SupabaseClient) Insert(table string, data interface{}, userJWT string) 
 
 // Update updates records matching the filter.
 func (s *SupabaseClient) Update(table, filter string, data interface{}, userJWT string) (json.RawMessage, error) {
+	if isMockMode() {
+		return s.mockUpdate(table, filter, data)
+	}
 	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -210,6 +235,9 @@ func (s *SupabaseClient) Update(table, filter string, data interface{}, userJWT 
 
 // Delete removes records matching the filter.
 func (s *SupabaseClient) Delete(table, filter, userJWT string) error {
+	if isMockMode() {
+		return s.mockDelete(table, filter)
+	}
 	url := s.restURL(table) + "?" + filter
 	req, err := s.newRequest("DELETE", url, nil, userJWT)
 	if err != nil {
@@ -236,6 +264,11 @@ func (s *SupabaseClient) storageURL(bucket, path string) string {
 
 // StorageUpload uploads a file to Supabase Storage.
 func (s *SupabaseClient) StorageUpload(bucket, path string, file multipart.File, contentType, userJWT string) error {
+	if isMockMode() {
+		// In mock mode, just drain the file without uploading
+		io.ReadAll(file)
+		return nil
+	}
 	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
@@ -263,6 +296,9 @@ func (s *SupabaseClient) StorageUpload(bucket, path string, file multipart.File,
 
 // StorageDownload downloads a file from Supabase Storage.
 func (s *SupabaseClient) StorageDownload(bucket, path, userJWT string) ([]byte, string, error) {
+	if isMockMode() {
+		return []byte("[Mock file content]"), "text/plain", nil
+	}
 	req, err := http.NewRequest("GET", s.storageURL(bucket, path), nil)
 	if err != nil {
 		return nil, "", err
@@ -290,6 +326,9 @@ func (s *SupabaseClient) StorageDownload(bucket, path, userJWT string) ([]byte, 
 
 // StorageDelete deletes a file from Supabase Storage.
 func (s *SupabaseClient) StorageDelete(bucket string, paths []string, userJWT string) error {
+	if isMockMode() {
+		return nil
+	}
 	body, _ := json.Marshal(map[string]interface{}{"prefixes": paths})
 	req, err := http.NewRequest("DELETE", s.URL+"/storage/v1/object/"+bucket, bytes.NewReader(body))
 	if err != nil {
@@ -316,6 +355,24 @@ func (s *SupabaseClient) StorageDelete(bucket string, paths []string, userJWT st
 
 // InvokeEdgeFunction calls a Supabase Edge Function.
 func (s *SupabaseClient) InvokeEdgeFunction(functionName string, body interface{}, userJWT string) (json.RawMessage, error) {
+	if isMockMode() {
+		// Return mock results based on function name
+		switch functionName {
+		case "tax-analysis":
+			return json.RawMessage(`{
+				"old_regime_tax": 125000,
+				"new_regime_tax": 95000,
+				"recommended_regime": "new",
+				"savings": 30000,
+				"deductions": {"80C": 150000, "80D": 25000},
+				"scheme_recommendations": [{"name": "PPF", "benefit": "Tax-free returns under 80C"}, {"name": "ELSS", "benefit": "Market-linked returns with 80C deduction"}]
+			}`), nil
+		case "analyze-document":
+			return json.RawMessage(`{"summary": "Mock document analysis complete.", "extracted": {"income": 0, "deductions": 0}}`), nil
+		default:
+			return json.RawMessage(`{"status": "ok"}`), nil
+		}
+	}
 	url := s.URL + "/functions/v1/" + functionName
 
 	jsonBody, err := json.Marshal(body)

@@ -22,7 +22,28 @@ func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if data == nil {
-		jsonError(w, "profile not found", http.StatusNotFound)
+		// Auto-create a default profile (important for mock mode; harmless in production)
+		newProfile := map[string]interface{}{
+			"user_id":              userID,
+			"full_name":            "Demo User",
+			"email":                middleware.GetEmail(r),
+			"onboarding_completed": true,
+			"tax_regime":           "new",
+		}
+		result, err := h.SB.Insert("profiles", newProfile, jwt)
+		if err != nil {
+			jsonError(w, "profile not found", http.StatusNotFound)
+			return
+		}
+		// result is a JSON array; unwrap to single object
+		var arr []json.RawMessage
+		if json.Unmarshal(result, &arr) == nil && len(arr) > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(arr[0])
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(result)
 		return
 	}
 

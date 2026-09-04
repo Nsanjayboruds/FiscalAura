@@ -1,13 +1,42 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const IS_MOCK = import.meta.env.VITE_MOCK_SUPABASE === "true";
 
 /**
- * Get the current Supabase JWT token for authenticating with the backend.
+ * Get the current access token for authenticating with the backend.
+ * In mock mode, reads from localStorage instead of hitting Supabase.
  */
 async function getToken(): Promise<string | null> {
+    if (IS_MOCK) {
+        return localStorage.getItem("mock_access_token");
+    }
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token ?? null;
+}
+
+/**
+ * Perform mock login against the local backend (only used when VITE_MOCK_SUPABASE=true).
+ */
+export async function mockLogin(email: string, password: string): Promise<{ access_token: string; user: { id: string; email: string } }> {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Login failed" }));
+        throw new Error(err.error || "Login failed");
+    }
+    return res.json();
+}
+
+/**
+ * Clear mock session from localStorage.
+ */
+export function mockLogout() {
+    localStorage.removeItem("mock_access_token");
+    localStorage.removeItem("mock_user");
 }
 
 /**

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import DashboardNav from "@/components/DashboardNav";
 import { useAuth } from "@/hooks/useAuth";
 import { getTaxBuddyStrategy } from "@/lib/api";
@@ -302,8 +303,22 @@ const TaxBuddy = () => {
               <CardContent className="p-10 pt-0">
                 <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/5 relative group">
                   <div className="absolute inset-0 bg-primary/[0.01] pointer-events-none" />
-                  <div className="whitespace-pre-wrap text-xl leading-[1.8] text-foreground font-medium selection:bg-primary/30 relative z-10">
-                    {strategy}
+                  <div className="text-xl leading-[1.8] text-foreground font-medium relative z-10 prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-headings:font-black prose-a:text-primary">
+                    <ReactMarkdown
+                      components={{
+                        h1: ({node, ...props}) => <h1 className="text-4xl font-black mb-6 mt-10 text-primary" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-3xl font-black mb-4 mt-8" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-2xl font-bold mb-3 mt-6 text-primary/80" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-6 opacity-90 leading-loose" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-8 mb-6 space-y-3 opacity-90 marker:text-primary" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal pl-8 mb-6 space-y-3 opacity-90 marker:text-primary marker:font-bold" {...props} />,
+                        li: ({node, ...props}) => <li className="pl-2" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-black text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-6 italic my-6 bg-primary/5 p-4 rounded-r-xl" {...props} />
+                      }}
+                    >
+                      {strategy}
+                    </ReactMarkdown>
                   </div>
                 </div>
                 <div className="mt-12 flex flex-wrap justify-end gap-6 text-foreground">

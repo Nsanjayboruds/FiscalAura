@@ -201,7 +201,7 @@ func buildContextSummary(req taxBuddyRequest) string {
 func callGroq(apiKey, systemPrompt, userPrompt string) (string, error) {
 	model := strings.TrimSpace(os.Getenv("GROQ_MODEL"))
 	if model == "" {
-		model = "llama-3.3-70b-versatile"
+		model = "qwen/qwen3.6-27b"
 	}
 
 	payload := map[string]interface{}{

@@ -11,6 +11,16 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      // Proxy all Supabase requests through Vite's Node.js process
+      // (Chrome has DNS issues with supabase.co but Node.js resolves fine)
+      "/supabase": {
+        target: "https://uwtfztypqjlkboscnqib.supabase.co",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/supabase/, ""),
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

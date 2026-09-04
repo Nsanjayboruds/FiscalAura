@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -59,6 +60,33 @@ func main() {
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
+	})
+
+	// Mock auth login endpoint (only active when MOCK_SUPABASE=true)
+	r.Post("/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		if os.Getenv("MOCK_SUPABASE") != "true" {
+			http.Error(w, `{"error":"not available"}`, http.StatusNotFound)
+			return
+		}
+		var body struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Email == "" {
+			http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
+			return
+		}
+		// Generate a deterministic mock user ID from email
+		mockUserID := "mock-" + strings.ReplaceAll(body.Email, "@", "-at-")
+		mockToken := "mock-token:" + mockUserID + ":" + body.Email
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"access_token": mockToken,
+			"user": map[string]string{
+				"id":    mockUserID,
+				"email": body.Email,
+			},
+		})
 	})
 
 	// Protected API routes

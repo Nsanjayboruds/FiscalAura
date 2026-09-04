@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { mockLogin } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,8 @@ import { Eye, EyeOff, ArrowLeft, Sparkles, Zap } from "lucide-react";
 import { TiltCard } from "@/components/AdvancedUI/TiltCard";
 import { Magnetic } from "@/components/AdvancedUI/Magnetic";
 import { motion } from "framer-motion";
+
+const IS_MOCK = import.meta.env.VITE_MOCK_SUPABASE === "true";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -24,6 +27,13 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Mock mode: check localStorage for an existing mock session
+    if (IS_MOCK) {
+      if (localStorage.getItem("mock_access_token")) {
+        navigate("/dashboard");
+      }
+      return;
+    }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         navigate("/dashboard");
@@ -40,6 +50,15 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      if (IS_MOCK) {
+        // Mock mode: authenticate against local backend, store token in localStorage
+        const data = await mockLogin(email, password);
+        localStorage.setItem("mock_access_token", data.access_token);
+        localStorage.setItem("mock_user", JSON.stringify(data.user));
+        navigate("/dashboard");
+        return;
+      }
+
       if (forgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,

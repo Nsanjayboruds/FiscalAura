@@ -66,7 +66,7 @@ const Dashboard = () => {
             <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Intelligence Command</span>
           </div>
           <h1 className="font-display text-5xl font-black text-foreground mb-2 tracking-tight">
-            Hi, {profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || "Trader"}
+            Hi, {profile?.full_name?.split(' ')?.[0] || user?.user_metadata?.full_name?.split(' ')?.[0] || "Trader"}
           </h1>
           <p className="text-muted-foreground text-xl mb-12 font-medium">Your financial ecosystem is performing optimally.</p>
         </motion.div>

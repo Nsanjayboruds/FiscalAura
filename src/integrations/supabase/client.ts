@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// In development, route Supabase calls through the Vite proxy (Node.js resolves DNS correctly).
+// In production, use the real Supabase URL directly.
+const SUPABASE_URL = import.meta.env.DEV
+  ? `${window.location.origin}/supabase`
+  : import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
