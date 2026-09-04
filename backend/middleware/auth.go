@@ -11,9 +11,9 @@ import (
 type contextKey string
 
 const (
-	UserIDKey   contextKey = "user_id"
-	EmailKey    contextKey = "email"
-	UserJWTKey  contextKey = "user_jwt"
+	UserIDKey  contextKey = "user_id"
+	EmailKey   contextKey = "email"
+	UserJWTKey contextKey = "user_jwt"
 )
 
 // Auth middleware validates the Supabase JWT and injects user info + token into context.
