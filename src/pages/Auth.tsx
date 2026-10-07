@@ -7,10 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, ArrowLeft, Sparkles, Zap } from "lucide-react";
-import { TiltCard } from "@/components/AdvancedUI/TiltCard";
-import { Magnetic } from "@/components/AdvancedUI/Magnetic";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, ArrowLeft, ShieldCheck } from "lucide-react";
 
 const IS_MOCK = import.meta.env.VITE_MOCK_SUPABASE === "true";
 
@@ -89,150 +86,129 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-background">
-      {/* Background Elements */}
-      <div className="fixed inset-0 mesh-gradient opacity-[0.05] pointer-events-none -z-20" />
-      <div className="fixed inset-0 glow-spot top-[-20%] right-[-10%] -z-10" style={{ "--glow-color": "hsl(var(--primary) / 0.15)" } as any} />
-      <div className="fixed inset-0 glow-spot bottom-[-20%] left-[-10%] -z-10" style={{ "--glow-color": "hsl(var(--secondary) / 0.1)" } as any} />
-
-      <div className="w-full max-w-md relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <Link to="/" className="inline-flex items-center gap-3 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform">
-              <Sparkles className="h-6 w-6" />
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
+      <div className="w-full max-w-md py-12">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+              <ShieldCheck className="h-6 w-6" />
             </div>
-            <span className="font-display font-black text-3xl tracking-tighter text-foreground">FiscalAura</span>
+            <span className="font-bold text-2xl tracking-tight text-foreground">FiscalAura</span>
           </Link>
-        </motion.div>
+          <p className="text-xs text-muted-foreground mt-2">Official Tax Computation & e-Filing Portal</p>
+        </div>
 
-        <TiltCard>
-          <Card className="glass-darker border-white/10 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -z-10 group-hover:bg-primary/20 transition-colors" />
+        <Card className="border border-border bg-card shadow-md">
+          <CardHeader className="text-center pb-4 pt-6">
+            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+              {forgotPassword ? "Reset Your Password" : isSignUp ? "Create Your Account" : "Sign In to Your Account"}
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground mt-1.5">
+              {forgotPassword
+                ? "Enter your email address and we'll send a password reset link."
+                : isSignUp
+                  ? "Get started with automated ITR preparation and deduction tracking."
+                  : "Access your saved Form 16, tax computations, and filings."}
+            </CardDescription>
+          </CardHeader>
 
-            <CardHeader className="text-center pb-6">
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                  <Zap className="h-6 w-6 text-primary animate-pulse" />
-                </div>
-              </div>
-              <CardTitle className="font-display text-3xl font-black tracking-tight text-foreground">
-                {forgotPassword ? "Recover Access" : isSignUp ? "Join the Future" : "Welcome Back"}
-              </CardTitle>
-              <CardDescription className="text-base font-medium text-muted-foreground mt-2">
-                {forgotPassword
-                  ? "We'll send you a secure link to reset."
-                  : isSignUp
-                    ? "Start your autonomous tax journey."
-                    : "Sign in to your financial ecosystem."}
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <form onSubmit={handleAuth} className="space-y-6">
-                {isSignUp && !forgotPassword && (
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Full Name</Label>
-                    <Input
-                      id="name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Rahul Sharma"
-                      required
-                      className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary focus:border-primary transition-all"
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Email Address</Label>
+          <CardContent className="p-6">
+            <form onSubmit={handleAuth} className="space-y-4">
+              {isSignUp && !forgotPassword && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-xs font-semibold text-foreground">Full Name</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    id="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Rajesh Kumar"
                     required
-                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary focus:border-primary transition-all"
+                    className="h-10 text-sm"
                   />
                 </div>
-                {!forgotPassword && (
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Access Key</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                        className="h-12 bg-white/5 border-white/10 rounded-xl pr-12 focus:ring-primary focus:border-primary transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <Magnetic>
-                  <Button
-                    type="submit"
-                    className="w-full rounded-xl h-14 font-black text-lg shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all border-0"
-                    style={{ background: "var(--gradient-primary)" }}
-                    disabled={loading}
-                  >
-                    {loading ? "Authenticating..." : forgotPassword ? "Reset Access" : isSignUp ? "Initialize Account" : "Enter Dashboard"}
-                  </Button>
-                </Magnetic>
-              </form>
-
-              <div className="mt-8 space-y-4 text-center">
-                {!forgotPassword && (
-                  <button
-                    onClick={() => setForgotPassword(true)}
-                    className="text-sm font-bold text-primary/70 hover:text-primary transition-colors hover:underline"
-                  >
-                    Forgot access key?
-                  </button>
-                )}
-                <div>
-                  {forgotPassword ? (
-                    <button
-                      onClick={() => setForgotPassword(false)}
-                      className="text-sm font-bold text-primary hover:underline inline-flex items-center gap-2"
-                    >
-                      <ArrowLeft className="h-4 w-4" /> Back to primary login
-                    </button>
-                  ) : (
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {isSignUp ? "Already part of the ecosystem?" : "New to the intelligence?"}{" "}
-                      <button
-                        onClick={() => setIsSignUp(!isSignUp)}
-                        className="text-primary hover:underline font-black ml-1"
-                      >
-                        {isSignUp ? "Sign In" : "Join Now"}
-                      </button>
-                    </p>
-                  )}
-                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-foreground">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                  className="h-10 text-sm"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TiltCard>
-      </div>
+              {!forgotPassword && (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="password" className="text-xs font-semibold text-foreground">Password</Label>
+                    <button
+                      type="button"
+                      onClick={() => setForgotPassword(true)}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                      className="h-10 text-sm pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-      <footer className="absolute bottom-8 w-full text-center px-6">
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/30">Standard Encryption • Privacy First Ecosystem</p>
-      </footer>
+              <Button
+                type="submit"
+                className="w-full h-10 font-semibold text-sm bg-primary hover:bg-primary/90 text-white mt-2"
+                disabled={loading}
+              >
+                {loading ? "Processing..." : forgotPassword ? "Send Reset Link" : isSignUp ? "Create Free Account" : "Sign In"}
+              </Button>
+            </form>
+
+            <div className="mt-6 pt-4 border-t border-border text-center">
+              {forgotPassword ? (
+                <button
+                  onClick={() => setForgotPassword(false)}
+                  className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1.5"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
+                </button>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {isSignUp ? "Already have an account?" : "Don't have an account yet?"}{" "}
+                  <button
+                    onClick={() => setIsSignUp(!isSignUp)}
+                    className="text-primary hover:underline font-semibold ml-1"
+                  >
+                    {isSignUp ? "Sign In" : "Register Now"}
+                  </button>
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-[11px] text-muted-foreground mt-8">
+          Secured with 256-bit SSL encryption. All calculations compliant with CBDT rules.
+        </p>
+      </div>
     </div>
   );
 };

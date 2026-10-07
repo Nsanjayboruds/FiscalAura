@@ -32,6 +32,7 @@ func main() {
 	taxBuddyH := &handlers.TaxBuddyHandler{}
 	dashboardH := &handlers.DashboardHandler{SB: sb}
 	schemesH := &handlers.SchemesHandler{SB: sb}
+	fintechH := &handlers.FintechHandler{SB: sb}
 
 	// Setup router
 	r := chi.NewRouter()
@@ -119,6 +120,16 @@ func main() {
 		// Schemes
 		r.Get("/schemes", schemesH.GetSchemes)
 		r.Post("/schemes/personalized", schemesH.GetPersonalized)
+
+		// Advanced Fintech Modules
+		r.Get("/tax/health", fintechH.GetTaxHealth)
+		r.Get("/tax/anomalies", fintechH.GetAnomalies)
+		r.Post("/form16/consolidate", fintechH.ConsolidateForm16s)
+		r.Post("/reconciliation/run", fintechH.RunReconciliation)
+		r.Post("/capital-gains/analyze", fintechH.AnalyzeCapitalGains)
+		r.Post("/advance-tax/calculate", fintechH.CalculateAdvanceTax)
+		r.Post("/itr/export", fintechH.ExportITR)
+		r.Post("/copilot/chat", fintechH.CopilotChat)
 	})
 
 	port := os.Getenv("PORT")

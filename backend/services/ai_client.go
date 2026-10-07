@@ -49,7 +49,7 @@ func (c *AIClient) getProviderConfig(provider string) (AIProviderConfig, error) 
 		}
 		model := strings.TrimSpace(os.Getenv("GROQ_MODEL"))
 		if model == "" {
-			model = "qwen/qwen3.6-27b"
+			model = "llama-3.3-70b-versatile"
 		}
 		return AIProviderConfig{
 			BaseURL: "https://api.groq.com/openai/v1/chat/completions",

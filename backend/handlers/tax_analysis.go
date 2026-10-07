@@ -7,6 +7,7 @@ import (
 
 	"github.com/csv-mongo-dreams/backend/middleware"
 	"github.com/csv-mongo-dreams/backend/services"
+	"github.com/csv-mongo-dreams/backend/services/taxengine"
 )
 
 type TaxAnalysisHandler struct {
@@ -62,71 +63,100 @@ func (h *TaxAnalysisHandler) RunAnalysis(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// AI Analysis using Unified AIClient
-
-	systemPrompt := `You are an expert Indian tax consultant AI. Analyze the user's financial data and provide comprehensive tax guidance for the Indian tax system (FY 2025-26).
-
-Rules:
-- Calculate tax under both Old and New regimes accurately
-- New regime FY 2025-26 slabs: 0-4L (nil), 4-8L (5%), 8-12L (10%), 12-16L (15%), 16-20L (20%), 20-24L (25%), >24L (30%). Standard deduction: 75,000.
-- Old regime: 0-2.5L (nil), 2.5-5L (5%), 5-10L (20%), >10L (30%). Standard deduction: 50,000.
-- Section 87A rebate: Old regime up to 5L taxable (12,500 max); New regime up to 12L taxable (60,000 max).
-- 4% cess on total tax
-- Suggest specific deductions the user can claim but hasn't
-- Recommend the better regime with clear reasoning
-- Suggest eligible government schemes
-
-Provide actionable, specific advice. YOU MUST RETURN ONLY VALID JSON matching this structure:
-{
-  "old_regime_tax": number,
-  "new_regime_tax": number,
-  "recommended_regime": "old" | "new",
-  "regime_reasoning": "string",
-  "total_income": number,
-  "total_deductions_old": number,
-  "taxable_income_old": number,
-  "taxable_income_new": number,
-  "savings_potential": number,
-  "deduction_suggestions": [{"section":"string","title":"string","description":"string","max_limit":number,"current_claimed":number,"potential_saving":number}],
-  "scheme_recommendations": [{"name":"string","type":"string","tax_benefit":"string","eligibility":"string","description":"string","how_to_apply":"string"}],
-  "analysis_summary": "string"
-}`
-
-	finDataJSON, _ := json.MarshalIndent(body.FinancialData, "", "  ")
-	profileJSON, _ := json.MarshalIndent(body.Profile, "", "  ")
-	userPrompt := fmt.Sprintf("User Profile:\n%s\n\nFinancial Data:\n%s\n\nProvide complete tax analysis with regime comparison, deduction suggestions, and scheme recommendations.", string(profileJSON), string(finDataJSON))
-
-	aiClient := services.NewAIClient()
-	responseStr, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, nil, true, false)
-	if err != nil {
-		jsonError(w, "AI Failover Exhausted: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var resultData map[string]interface{}
-	if err := json.Unmarshal([]byte(responseStr), &resultData); err != nil {
-		jsonError(w, "Invalid JSON from AI", http.StatusInternalServerError)
-		return
-	}
-
-	// Save analysis to DB
 	fy := "2025-26"
 	if fyVal, ok := body.FinancialData["financial_year"].(string); ok && fyVal != "" {
 		fy = fyVal
 	}
 
+	ageGroup := "below-60"
+	if ag, ok := body.Profile["age_group"].(string); ok && ag != "" {
+		ageGroup = ag
+	}
+
+	// Build deterministic calculation input
+	calcInput := taxengine.TaxCalculationInput{
+		FinancialYear:    fy,
+		AgeGroup:         ageGroup,
+		GrossSalary:      toFloat(body.FinancialData["gross_salary"]),
+		OtherIncome:      toFloat(body.FinancialData["other_income"]),
+		RentalIncome:     toFloat(body.FinancialData["rental_income"]),
+		InterestIncome:   toFloat(body.FinancialData["interest_income"]),
+		BusinessIncome:   toFloat(body.FinancialData["business_income"]),
+		Deduction80C:     toFloat(body.FinancialData["deductions_80c"]),
+		Deduction80D:     toFloat(body.FinancialData["deductions_80d"]),
+		Deduction80E:     toFloat(body.FinancialData["deductions_80e"]),
+		Deduction80G:     toFloat(body.FinancialData["deductions_80g"]),
+		Deduction80CCD1B: toFloat(body.FinancialData["deductions_nps"]),
+		HRAExemption:     toFloat(body.FinancialData["deductions_hra"]),
+		LTAExemption:     toFloat(body.FinancialData["deductions_lta"]),
+		OtherDeductions:  toFloat(body.FinancialData["other_deductions"]),
+		TDSDeducted:      toFloat(body.FinancialData["tds_deducted"]),
+	}
+
+	// 1. DETERMINISTIC CALCULATION (SOURCE OF TRUTH)
+	deterministicComparison := taxengine.CompareRegimes(calcInput)
+
+	// 2. Discover deductions deterministically
+	deductionsList := taxengine.DiscoverDeductions(calcInput)
+
+	// 3. AI Explanation Layer: Provide contextual advice using the EXACT deterministic numbers
+	summaryText := deterministicComparison.RegimeReasoning
+	aiClient := services.NewAIClient()
+	systemPrompt := `You are an Indian Tax Advisory AI. You are provided with EXACT, DETERMINISTIC tax computation figures already calculated by the tax engine.
+DO NOT recalculate the numbers. Provide a concise, clear 2-3 sentence executive summary explaining why the recommended regime benefits this taxpayer and highlighting their best tax-saving opportunities.`
+
+	userPrompt := fmt.Sprintf(`Deterministic Computation:
+Gross Income: ₹%.0f
+Old Regime Tax: ₹%.0f (Taxable: ₹%.0f, Deductions: ₹%.0f)
+New Regime Tax: ₹%.0f (Taxable: ₹%.0f, Standard Deduction: ₹%.0f)
+Recommended: %s (Savings: ₹%.0f)
+Profile: Age group %s, Employment %v`,
+		deterministicComparison.OldRegime.GrossTotalIncome,
+		deterministicComparison.OldRegime.TotalTaxLiability,
+		deterministicComparison.OldRegime.TaxableIncome,
+		deterministicComparison.OldRegime.TotalDeductions,
+		deterministicComparison.NewRegime.TotalTaxLiability,
+		deterministicComparison.NewRegime.TaxableIncome,
+		deterministicComparison.NewRegime.StandardDeduction,
+		deterministicComparison.RecommendedRegime,
+		deterministicComparison.TaxDifference,
+		ageGroup,
+		body.Profile["employment_type"],
+	)
+
+	aiSummary, err := aiClient.ChatCompletion("gemini", systemPrompt, userPrompt, nil, false, false)
+	if err == nil && aiSummary != "" {
+		summaryText = aiSummary
+	}
+
+	resultData := map[string]interface{}{
+		"old_regime_tax":         deterministicComparison.OldRegime.TotalTaxLiability,
+		"new_regime_tax":         deterministicComparison.NewRegime.TotalTaxLiability,
+		"recommended_regime":     deterministicComparison.RecommendedRegime,
+		"regime_reasoning":       deterministicComparison.RegimeReasoning,
+		"tax_difference":         deterministicComparison.TaxDifference,
+		"break_even_deductions":  deterministicComparison.BreakEvenDeductions,
+		"total_income":           deterministicComparison.OldRegime.GrossTotalIncome,
+		"total_deductions_old":   deterministicComparison.OldRegime.TotalDeductions,
+		"taxable_income_old":     deterministicComparison.OldRegime.TaxableIncome,
+		"taxable_income_new":     deterministicComparison.NewRegime.TaxableIncome,
+		"deduction_suggestions":  deductionsList,
+		"analysis_summary":       summaryText,
+		"old_regime_details":     deterministicComparison.OldRegime,
+		"new_regime_details":     deterministicComparison.NewRegime,
+	}
+
+	// Save analysis to DB
 	analysisPayload := map[string]interface{}{
-		"old_regime_tax":         resultData["old_regime_tax"],
-		"new_regime_tax":         resultData["new_regime_tax"],
-		"recommended_regime":     resultData["recommended_regime"],
-		"deduction_suggestions":  resultData["deduction_suggestions"],
-		"scheme_recommendations": resultData["scheme_recommendations"],
-		"analysis_summary":       resultData["analysis_summary"],
+		"old_regime_tax":        deterministicComparison.OldRegime.TotalTaxLiability,
+		"new_regime_tax":        deterministicComparison.NewRegime.TotalTaxLiability,
+		"recommended_regime":    deterministicComparison.RecommendedRegime,
+		"analysis_summary":      summaryText,
+		"deduction_suggestions": deductionsList,
 	}
 
 	existing, _ := h.SB.QuerySingle("tax_analyses", "select=id&financial_year=eq."+fy+"&user_id=eq."+userID, jwt)
-
-	if existing != nil && len(existing) > 4 { // if found and not empty json
+	if existing != nil && len(existing) > 4 {
 		var existingData map[string]interface{}
 		json.Unmarshal(existing, &existingData)
 		if id, ok := existingData["id"]; ok {

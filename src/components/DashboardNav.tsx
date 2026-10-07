@@ -1,22 +1,81 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { LogOut, LayoutDashboard, Upload, Brain, Landmark, FileText, User, Activity } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  Upload,
+  Brain,
+  FileCheck,
+  TrendingUp,
+  Calendar,
+  Activity,
+  FileText,
+  User,
+  ShieldCheck,
+  Sparkles,
+  Menu,
+  X,
+  Layers,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
+
+export const FAMILY_PROFILES = [
+  { id: "self", name: "Rajesh (Self)", relation: "Primary", pan: "ABCPS1234F" },
+  { id: "spouse", name: "Priya (Spouse)", relation: "Consultant", pan: "XYZPS5678K" },
+  { id: "parent", name: "Ramesh (Parent)", relation: "Senior Citizen", pan: "PQRPS9012M" },
+];
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/documents", label: "Documents", icon: Upload },
-  { path: "/tax-analysis", label: "Tax Analysis", icon: Brain },
-  { path: "/schemes", label: "Schemes", icon: Landmark },
+  { path: "/form16", label: "Form 16s", icon: Layers },
+  { path: "/reconciliation", label: "AIS Reconcile", icon: FileCheck },
+  { path: "/tax-analysis", label: "Regimes", icon: Brain },
+  { path: "/capital-gains", label: "Capital Gains", icon: TrendingUp },
+  { path: "/advance-tax", label: "Advance Tax", icon: Calendar },
   { path: "/simulator", label: "Simulator", icon: Activity },
-  { path: "/tax-summary", label: "Summary", icon: FileText },
-  { path: "/profile", label: "Profile", icon: User },
+  { path: "/copilot", label: "Copilot", icon: Sparkles },
+  { path: "/reports", label: "Reports", icon: FileText },
 ];
 
 const DashboardNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isDemo, setIsDemo] = useState(localStorage.getItem("fiscalaura_demo_mode") === "true");
+  const [activeProfile, setActiveProfile] = useState(
+    localStorage.getItem("fiscalaura_family_profile") || "self"
+  );
+
+  const switchProfile = (profileId: string) => {
+    setActiveProfile(profileId);
+    localStorage.setItem("fiscalaura_family_profile", profileId);
+    const prof = FAMILY_PROFILES.find((p) => p.id === profileId);
+    toast({
+      title: `Switched Taxpayer Profile`,
+      description: `Active Profile: ${prof?.name} (${prof?.relation}). All documents and calculations are isolated to this PAN.`,
+    });
+  };
+
+  const toggleDemoMode = () => {
+    const next = !isDemo;
+    setIsDemo(next);
+    localStorage.setItem("fiscalaura_demo_mode", String(next));
+    if (next) {
+      toast({
+        title: "Demo Mode Enabled",
+        description: "Loaded verified test records for Rajesh Sharma (Job Switcher + AIS Interest Discrepancy).",
+      });
+    } else {
+      toast({
+        title: "Live Mode Enabled",
+        description: "Viewing your live taxpayer account data.",
+      });
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -24,65 +83,154 @@ const DashboardNav = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-md focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            onClick={() => {
-              if (location.pathname === "/dashboard") {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              } else {
-                navigate("/dashboard");
-                requestAnimationFrame(() => {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                });
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                if (location.pathname === "/dashboard") {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                } else {
-                  navigate("/dashboard");
-                  requestAnimationFrame(() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  });
-                }
-              }
-            }}
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-lg">F</div>
-            <span className="font-display font-bold text-xl text-foreground hidden sm:inline">FiscalAura</span>
-          </button>
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Link key={item.path} to={item.path}>
-                <Button variant={location.pathname === item.path ? "secondary" : "ghost"} size="sm" className="gap-1.5">
-                  <item.icon className="h-4 w-4" />
-                  <span className="hidden lg:inline">{item.label}</span>
-                </Button>
-              </Link>
-            ))}
+    <>
+      <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link to="/dashboard" className="flex items-center gap-2 group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <span className="font-bold text-base text-slate-900 tracking-tight">FiscalAura</span>
+            </Link>
+
+            {/* Desktop Nav Items */}
+            <div className="hidden lg:flex items-center gap-1 bg-slate-100/70 rounded-lg p-1 border border-slate-200/80">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link key={item.path} to={item.path}>
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      size="sm"
+                      className={`h-7 px-2.5 rounded-md text-xs font-medium ${
+                        isActive
+                          ? "bg-white text-primary shadow-sm hover:bg-white"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                      }`}
+                    >
+                      <item.icon className="h-3.5 w-3.5 mr-1" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Action Items */}
+          <div className="flex items-center gap-2">
+            {/* Family Profile Switcher (Family Tax Hub) */}
+            <div className="hidden sm:flex items-center">
+              <select
+                value={activeProfile}
+                onChange={(e) => switchProfile(e.target.value)}
+                className="text-[11px] font-semibold bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200 rounded-md px-2 py-1 outline-none cursor-pointer"
+                title="Switch Taxpayer Profile (Family Tax Hub)"
+              >
+                {FAMILY_PROFILES.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    👤 {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Demo Mode Switcher */}
+            <button
+              type="button"
+              onClick={toggleDemoMode}
+              className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1.5 ${
+                isDemo
+                  ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                  : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <div className={`h-1.5 w-1.5 rounded-full ${isDemo ? "bg-blue-600" : "bg-slate-400"}`} />
+              <span>{isDemo ? "Demo Active" : "Try Demo"}</span>
+            </button>
+
+            {/* Profile Link */}
+            <Link to="/profile" className="hidden sm:inline-block">
+              <Button
+                variant={location.pathname === "/profile" ? "default" : "ghost"}
+                size="sm"
+                className="h-8 px-2 text-xs font-medium text-slate-600 hover:text-slate-900"
+              >
+                <User className="h-3.5 w-3.5 mr-1" /> Profile
+              </Button>
+            </Link>
+
+            {/* Sign Out */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="hidden sm:flex h-8 px-2 text-xs font-medium text-slate-500 hover:text-red-600"
+            >
+              <LogOut className="h-3.5 w-3.5 mr-1" />
+            </Button>
+
+            {/* Mobile Hamburger */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-8 w-8 text-slate-600"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>
-          <LogOut className="h-4 w-4 mr-2" /> Sign Out
-        </Button>
-      </div>
-      {/* Mobile nav */}
-      <div className="md:hidden flex overflow-x-auto border-t border-border/50 px-2 py-1 gap-1">
-        {navItems.map((item) => (
-          <Link key={item.path} to={item.path}>
-            <Button variant={location.pathname === item.path ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs whitespace-nowrap">
-              <item.icon className="h-3.5 w-3.5" /> {item.label}
+      </nav>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 p-4 lg:hidden shadow-lg space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <div
+                    className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="pt-2 border-t flex justify-between items-center text-xs">
+            <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-slate-700 font-medium">
+              Taxpayer Profile
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                handleSignOut();
+                setMobileOpen(false);
+              }}
+              className="text-xs text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-3 w-3 mr-1" /> Sign Out
             </Button>
-          </Link>
-        ))}
-      </div>
-    </nav>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

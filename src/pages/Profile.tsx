@@ -2,16 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { updateProfile, getDocuments } from "@/lib/api";
 import DashboardNav from "@/components/DashboardNav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { Loader2, Save, FileText, User, Shield, Briefcase, Zap, Calendar } from "lucide-react";
-import { TiltCard } from "@/components/AdvancedUI/TiltCard";
-import { Magnetic } from "@/components/AdvancedUI/Magnetic";
+import { Loader2, Save, FileText, User, ShieldCheck, Briefcase, Calendar, CheckCircle2, Mail } from "lucide-react";
 
 const Profile = () => {
   const { user, profile, loading, refetchProfile } = useAuth();
@@ -48,171 +47,191 @@ const Profile = () => {
         age_group: ageGroup,
         tax_regime: taxRegime,
       });
-      toast({ title: "Profile updated", description: "Your changes have been saved." });
+      toast({ title: "Profile updated", description: "Your taxpayer profile changes have been saved." });
       refetchProfile();
     } catch (error: unknown) {
       const e = error as Error;
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Error updating profile", description: e.message, variant: "destructive" });
     }
     setSaving(false);
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="fixed inset-0 mesh-gradient opacity-[0.03] pointer-events-none -z-20" />
-      <div className="absolute top-[-10%] left-[-10%] glow-spot -z-10" style={{ "--glow-color": "hsl(var(--primary) / 0.1)" } as React.CSSProperties} />
-      
+    <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <div className="container py-12 max-w-4xl relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
-              <User className="h-5 w-5" />
-            </div>
-            <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Identity Hub</span>
+      <main className="container max-w-5xl py-8 space-y-6">
+        {/* Header */}
+        <div className="border-b pb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
+              <ShieldCheck className="h-3 w-3 mr-1 text-primary" /> Taxpayer Profile
+            </Badge>
           </div>
-          <h1 className="font-display text-5xl font-black text-foreground mb-3 tracking-tight">System Settings</h1>
-          <p className="text-muted-foreground text-xl mb-12 font-medium">Configure your core profile and preferences for optimal tax intelligence.</p>
-        </motion.div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Account & Filing Profile</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage your personal tax identity, employment parameters, and default tax regime settings.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-              <TiltCard>
-                <Card className="glass border-white/5 shadow-2xl overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -z-10 group-hover:bg-primary/20 transition-colors" />
-                  <CardHeader>
-                    <CardTitle className="font-display text-2xl font-black flex items-center gap-3">
-                      <Shield className="h-6 w-6 text-primary" />
-                      Personal Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 pt-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Registered Email</Label>
-                        <Input id="email" value={user?.email || ""} disabled className="h-12 bg-white/5 border-white/5 rounded-xl font-bold text-muted-foreground" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Full Name</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="h-12 bg-white/5 border-white/10 rounded-xl font-bold focus:ring-2 ring-primary/20 focus:border-primary transition-all" />
-                      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Profile Form */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="shadow-sm border-slate-200">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  <div>
+                    <CardTitle className="text-lg font-semibold">Taxpayer Details</CardTitle>
+                    <CardDescription>Primary identification details used in Form 16 and ITR declarations</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-xs font-semibold text-slate-700">Registered Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                      <Input id="email" value={user?.email || ""} disabled className="pl-9 bg-slate-100 text-slate-600 font-medium" />
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-xs font-semibold text-slate-700">Full Legal Name</Label>
+                    <Input 
+                      id="name" 
+                      placeholder="As per PAN card" 
+                      value={name} 
+                      onChange={(e) => setName(e.target.value)} 
+                    />
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="employment" className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <Briefcase className="h-3 w-3" /> Employment Vector
-                        </Label>
-                        <Select value={employment} onValueChange={setEmployment}>
-                          <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent className="glass border-white/10">
-                            <SelectItem value="salaried" className="font-bold">Salaried</SelectItem>
-                            <SelectItem value="self-employed" className="font-bold">Self Employed</SelectItem>
-                            <SelectItem value="business" className="font-bold">Business Owner</SelectItem>
-                            <SelectItem value="freelancer" className="font-bold">Freelancer</SelectItem>
-                            <SelectItem value="retired" className="font-bold">Retired</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="age" className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <Calendar className="h-3 w-3" /> Age Dimension
-                        </Label>
-                        <Select value={ageGroup} onValueChange={setAgeGroup}>
-                          <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold">
-                            <SelectValue placeholder="Select age group" />
-                          </SelectTrigger>
-                          <SelectContent className="glass border-white/10">
-                            <SelectItem value="below-60" className="font-bold">Below 60 years</SelectItem>
-                            <SelectItem value="60-80" className="font-bold">60 to 80 years</SelectItem>
-                            <SelectItem value="above-80" className="font-bold">Above 80 years</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                <Separator />
 
-                    <div className="space-y-2">
-                      <Label htmlFor="regime" className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <Zap className="h-3 w-3" /> Tax Regime Preference
-                      </Label>
-                      <Select value={taxRegime} onValueChange={setTaxRegime}>
-                        <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold">
-                          <SelectValue placeholder="Select regime" />
-                        </SelectTrigger>
-                        <SelectContent className="glass border-white/10">
-                          <SelectItem value="old" className="font-bold">Old Regime</SelectItem>
-                          <SelectItem value="new" className="font-bold">New Regime</SelectItem>
-                          <SelectItem value="not-sure" className="font-bold">Not Sure</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="employment" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Briefcase className="h-3.5 w-3.5 text-slate-500" /> Employment Category
+                    </Label>
+                    <Select value={employment} onValueChange={setEmployment}>
+                      <SelectTrigger id="employment">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="salaried">Salaried Employee</SelectItem>
+                        <SelectItem value="self-employed">Self Employed Professional</SelectItem>
+                        <SelectItem value="business">Business Proprietor / Director</SelectItem>
+                        <SelectItem value="freelancer">Freelancer / Independent Contractor</SelectItem>
+                        <SelectItem value="retired">Pensioner / Retired</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <div className="pt-6 border-t border-white/5 flex justify-end">
-                      <Magnetic>
-                        <Button 
-                          onClick={handleSave} 
-                          disabled={saving}
-                          className="px-10 h-14 rounded-2xl font-black text-lg transition-all shadow-xl shadow-primary/20 border-0"
-                          style={{ background: "var(--gradient-primary)" }}
-                        >
-                          {saving ? <Loader2 className="h-5 w-5 mr-3 animate-spin" /> : <Save className="h-5 w-5 mr-3" />}
-                          Update Identity
-                        </Button>
-                      </Magnetic>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </motion.div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="age" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5 text-slate-500" /> Age Group (Senior Citizen Bracket)
+                    </Label>
+                    <Select value={ageGroup} onValueChange={setAgeGroup}>
+                      <SelectTrigger id="age">
+                        <SelectValue placeholder="Select age bracket" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="below-60">Below 60 years (Standard Individual)</SelectItem>
+                        <SelectItem value="60-80">60 to 80 years (Senior Citizen)</SelectItem>
+                        <SelectItem value="above-80">Above 80 years (Super Senior Citizen)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="regime" className="text-xs font-semibold text-slate-700">Preferred Tax Regime</Label>
+                  <Select value={taxRegime} onValueChange={setTaxRegime}>
+                    <SelectTrigger id="regime">
+                      <SelectValue placeholder="Select preferred regime" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New Tax Regime (Section 115BAC - Default)</SelectItem>
+                      <SelectItem value="old">Old Tax Regime (With Chapter VI-A Deductions)</SelectItem>
+                      <SelectItem value="not-sure">Auto-Optimize (FiscalAura Recommendation)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-500">
+                    The platform will evaluate both regimes during analysis and alert you if the other saves more tax.
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end border-t bg-slate-50/50 py-3 px-6">
+                <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white font-medium">
+                  {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  Save Profile Changes
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
 
-          <div className="space-y-8">
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-              <TiltCard>
-                <Card className="glass border-white/5 shadow-2xl h-full group overflow-hidden">
-                  <div className="absolute top-0 left-0 w-32 h-32 bg-secondary/10 blur-3xl -z-10 group-hover:bg-secondary/20 transition-colors" />
-                  <CardHeader>
-                    <CardTitle className="font-display text-xl font-black flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-secondary" />
-                      Pulse Assets
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {documents.length === 0 ? (
-                      <p className="text-muted-foreground text-sm font-bold italic py-8 text-center opacity-60">No primary documents indexed.</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {documents.map((doc, i) => (
-                          <motion.div 
-                            key={doc.id} 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5 + (i * 0.1) }}
-                            className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all cursor-pointer group/item"
-                          >
-                            <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 group-hover/item:scale-110 transition-transform">
-                              <FileText className="h-5 w-5" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-black text-foreground truncate">{doc.file_name}</p>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{doc.status}</p>
-                            </div>
-                          </motion.div>
-                        ))}
+          {/* Sidebar / Recent Documents */}
+          <div className="space-y-6">
+            <Card className="shadow-sm border-slate-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  Uploaded Documents
+                </CardTitle>
+                <CardDescription>Recent Form 16 and investment records</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {documents.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed rounded-lg bg-slate-50">
+                    <FileText className="h-8 w-8 mx-auto text-slate-300 mb-1" />
+                    <p className="text-xs text-slate-500">No documents uploaded yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {documents.map((doc) => (
+                      <div 
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 overflow-hidden">
+                          <FileText className="h-4 w-4 text-primary shrink-0" />
+                          <div className="truncate">
+                            <p className="text-xs font-medium text-slate-800 truncate">{doc.file_name}</p>
+                            <span className="text-[11px] text-slate-400 capitalize">{doc.status}</span>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] text-emerald-700 bg-emerald-50 border-emerald-200 shrink-0">
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Ready
+                        </Badge>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TiltCard>
-            </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-200 bg-blue-50/50">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                  <ShieldCheck className="h-4 w-4" />
+                  CBDT & e-Filing Compliance
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your tax profile data is encrypted at rest using AES-256 and transmitted under standard SSL.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

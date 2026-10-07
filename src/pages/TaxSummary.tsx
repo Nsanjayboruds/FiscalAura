@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getFinancialData, getTaxAnalysis } from "@/lib/api";
 import DashboardNav from "@/components/DashboardNav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
-import { IndianRupee, TrendingUp, TrendingDown, FileText, CheckCircle, Calculator, PieChart, Layers, ShieldCheck, Wallet } from "lucide-react";
-import { TiltCard } from "@/components/AdvancedUI/TiltCard";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { TrendingUp, TrendingDown, FileText, CheckCircle2, Calculator, Wallet, ShieldCheck, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const TaxSummary = () => {
   const { user, loading: authLoading } = useAuth();
@@ -22,7 +24,7 @@ const TaxSummary = () => {
       if (fin) setFinancialData(fin);
       if (tax) setAnalysis(tax);
     } catch {
-      // Not available yet
+      // Data not available yet
     }
   };
 
@@ -32,215 +34,241 @@ const TaxSummary = () => {
 
   const totalIncome = financialData
     ? (financialData.gross_salary || 0) +
-    (financialData.other_income || 0) +
-    (financialData.rental_income || 0) +
-    (financialData.interest_income || 0) +
-    (financialData.business_income || 0)
+      (financialData.other_income || 0) +
+      (financialData.rental_income || 0) +
+      (financialData.interest_income || 0) +
+      (financialData.business_income || 0)
     : 0;
 
   const totalDeductions = financialData
     ? (financialData.deductions_80c || 0) +
-    (financialData.deductions_80d || 0) +
-    (financialData.deductions_80e || 0) +
-    (financialData.deductions_80g || 0) +
-    (financialData.deductions_nps || 0) +
-    (financialData.deductions_hra || 0) +
-    (financialData.deductions_lta || 0) +
-    (financialData.other_deductions || 0)
+      (financialData.deductions_80d || 0) +
+      (financialData.deductions_80e || 0) +
+      (financialData.deductions_80g || 0) +
+      (financialData.deductions_nps || 0) +
+      (financialData.deductions_hra || 0) +
+      (financialData.deductions_lta || 0) +
+      (financialData.other_deductions || 0)
     : 0;
 
   const incomeItems = [
     { label: "Gross Salary", value: financialData?.gross_salary || 0 },
-    { label: "Rental Income", value: financialData?.rental_income || 0 },
-    { label: "Interest Income", value: financialData?.interest_income || 0 },
-    { label: "Other Income", value: financialData?.other_income || 0 },
-    { label: "Business Income", value: financialData?.business_income || 0 },
+    { label: "Rental / House Property Income", value: financialData?.rental_income || 0 },
+    { label: "Bank Interest & Fixed Deposits", value: financialData?.interest_income || 0 },
+    { label: "Business & Professional Receipts", value: financialData?.business_income || 0 },
+    { label: "Other Source Income", value: financialData?.other_income || 0 },
   ].filter((i) => i.value > 0);
 
   const deductionItems = [
-    { label: "Section 80C", value: financialData?.deductions_80c || 0 },
-    { label: "Section 80D (Health)", value: financialData?.deductions_80d || 0 },
-    { label: "Section 80E (Education)", value: financialData?.deductions_80e || 0 },
-    { label: "Section 80G (Donations)", value: financialData?.deductions_80g || 0 },
-    { label: "NPS (80CCD)", value: financialData?.deductions_nps || 0 },
-    { label: "HRA Exemption", value: financialData?.deductions_hra || 0 },
-    { label: "LTA Exemption", value: financialData?.deductions_lta || 0 },
-    { label: "Other Deductions", value: financialData?.other_deductions || 0 },
+    { label: "Section 80C (PPF, ELSS, EPF, LIC)", value: financialData?.deductions_80c || 0 },
+    { label: "Section 80D (Health Insurance)", value: financialData?.deductions_80d || 0 },
+    { label: "Section 80CCD(1B) (NPS Extra)", value: financialData?.deductions_nps || 0 },
+    { label: "Section 80E (Education Loan Interest)", value: financialData?.deductions_80e || 0 },
+    { label: "Section 80G (Charitable Donations)", value: financialData?.deductions_80g || 0 },
+    { label: "Section 10(13A) (HRA Exemption)", value: financialData?.deductions_hra || 0 },
+    { label: "Section 10(5) (LTA Exemption)", value: financialData?.deductions_lta || 0 },
+    { label: "Other Deductions & Professional Tax", value: financialData?.other_deductions || 0 },
   ].filter((i) => i.value > 0);
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="fixed inset-0 mesh-gradient opacity-[0.03] pointer-events-none -z-20" />
-      <div className="absolute top-[-5%] left-[-5%] glow-spot -z-10" style={{ "--glow-color": "hsl(var(--primary) / 0.1)" } as any} />
-      
+    <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <div className="container py-12 max-w-4xl relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
-              <Calculator className="h-5 w-5" />
+      <main className="container max-w-6xl py-8 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
+                <Calculator className="h-3 w-3 mr-1" /> Assessment Statement
+              </Badge>
             </div>
-            <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Consolidated View</span>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Consolidated Tax Summary</h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Official summary of reported gross income, allowable Chapter VI-A deductions, and net tax liability (FY 2024-25 / AY 2025-26).
+            </p>
           </div>
-          <h1 className="font-display text-5xl font-black text-foreground mb-3 tracking-tight">Fiscal Summary</h1>
-          <p className="text-muted-foreground text-xl mb-12 font-medium">High-level architectural audit of your financial state for FY 2025-26.</p>
-        </motion.div>
+          <div className="flex gap-2">
+            <Link to="/analysis">
+              <Button variant="outline" size="sm" className="font-medium text-xs">
+                Edit Financial Data
+              </Button>
+            </Link>
+          </div>
+        </div>
 
         {!financialData && !analysis ? (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <Card className="glass border-white/5 shadow-2xl p-20 text-center relative overflow-hidden border-dashed">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none" />
-              <FileText className="h-16 w-16 mx-auto mb-6 text-primary opacity-30" />
-              <CardTitle className="font-display text-3xl font-black mb-4">No Signal Detected</CardTitle>
-              <p className="text-muted-foreground text-lg font-medium max-w-sm mx-auto">
-                Initiate a data ingestion cycle in the Analysis hub to populate your fiscal summary.
-              </p>
-            </Card>
-          </motion.div>
+          <Card className="shadow-sm border-slate-200 p-12 text-center bg-white">
+            <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+            <CardTitle className="text-lg font-bold text-slate-900 mb-1">No Tax Assessment Found</CardTitle>
+            <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+              Enter your income and deduction details in the Tax Analysis section to generate your official tax summary statement.
+            </p>
+            <Link to="/analysis">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-medium text-xs">
+                Go to Tax Analysis <ArrowRight className="h-3.5 w-3.5 ml-1" />
+              </Button>
+            </Link>
+          </Card>
         ) : (
-          <div className="space-y-12">
-            {/* Total summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { label: "Liquid Inflow", value: totalIncome, icon: TrendingUp, color: "secondary" },
-                { label: "Exemption Delta", value: totalDeductions, icon: TrendingDown, color: "primary" },
-                { label: "Net Tax Liability", value: analysis ? Math.min(analysis.old_regime_tax || 0, analysis.new_regime_tax || 0) : 0, icon: Wallet, color: "accent" }
-              ].map((stat, i) => (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + (i * 0.1) }}>
-                  <TiltCard>
-                    <Card className="glass border-white/5 shadow-xl group overflow-hidden">
-                      <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}/10 blur-3xl -z-10 group-hover:bg-${stat.color}/20 transition-colors`} />
-                      <CardContent className="p-8 text-center">
-                        <stat.icon className={`h-8 w-8 text-${stat.color} mx-auto mb-4 group-hover:scale-110 transition-transform`} />
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">{stat.label}</p>
-                        <p className="text-3xl font-black font-display text-foreground">{stat.value === 0 && stat.label.includes("Tax") ? "—" : fmt(stat.value)}</p>
-                      </CardContent>
-                    </Card>
-                  </TiltCard>
-                </motion.div>
-              ))}
+          <div className="space-y-6">
+            {/* KPI Stat Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Gross Total Income</span>
+                    <div className="p-2 rounded-md bg-blue-50 text-primary">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">{fmt(totalIncome)}</p>
+                  <p className="text-xs text-slate-400 mt-1">Aggregate from all reported heads</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Deductions Claimed</span>
+                    <div className="p-2 rounded-md bg-emerald-50 text-emerald-600">
+                      <TrendingDown className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">{fmt(totalDeductions)}</p>
+                  <p className="text-xs text-slate-400 mt-1">Chapter VI-A & Salary Exemptions</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Estimated Tax Payable</span>
+                    <div className="p-2 rounded-md bg-amber-50 text-amber-600">
+                      <Wallet className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {analysis ? fmt(Math.min(analysis.old_regime_tax || 0, analysis.new_regime_tax || 0)) : "—"}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {analysis?.recommended_regime ? `Under ${analysis.recommended_regime.toUpperCase()} Tax Regime` : "Pending computation"}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Income breakdown */}
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-                <Card className="glass border-white/5 shadow-2xl h-full overflow-hidden relative">
-                  <div className="absolute top-0 left-0 w-32 h-32 bg-secondary/5 blur-3xl" />
-                  <CardHeader>
-                    <CardTitle className="font-display text-2xl font-black flex items-center gap-3">
-                      <PieChart className="h-6 w-6 text-secondary" />
-                      Inflow Segments
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      {incomeItems.map((item, i) => (
-                        <motion.div 
-                          key={item.label} 
-                          initial={{ opacity: 0, x: -10 }} 
-                          animate={{ opacity: 1, x: 0 }} 
-                          transition={{ delay: 0.5 + (i * 0.05) }}
-                          className="flex justify-between items-center p-3 rounded-2xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors"
-                        >
-                          <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">{item.label}</span>
-                          <span className="text-sm font-black text-foreground">{fmt(item.value)}</span>
-                        </motion.div>
+            {/* Income & Deduction Breakdown Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Income Breakdown */}
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardHeader className="pb-3 border-b">
+                  <CardTitle className="text-base font-semibold text-slate-900">Gross Income Breakdown</CardTitle>
+                  <CardDescription className="text-xs">Classification under Income Tax Act heads</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-3">
+                  {incomeItems.length > 0 ? (
+                    <div className="space-y-2.5">
+                      {incomeItems.map((item) => (
+                        <div key={item.label} className="flex justify-between items-center py-2 px-3 rounded-md bg-slate-50 border border-slate-100 text-xs">
+                          <span className="font-medium text-slate-700">{item.label}</span>
+                          <span className="font-semibold text-slate-900">{fmt(item.value)}</span>
+                        </div>
                       ))}
-                      <div className="flex justify-between items-center p-4 mt-6 rounded-2xl border-2 border-primary/20 bg-primary/5">
-                        <span className="text-sm font-black uppercase tracking-widest text-primary">Aggregate Total</span>
-                        <span className="text-lg font-black text-primary font-display">{fmt(totalIncome)}</span>
+                      <div className="flex justify-between items-center p-3 rounded-md bg-blue-50/60 border border-blue-100 text-xs mt-3">
+                        <span className="font-semibold text-slate-900">Gross Total Income</span>
+                        <span className="font-bold text-primary text-sm">{fmt(totalIncome)}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                  ) : (
+                    <p className="text-xs text-slate-400 py-6 text-center italic">No income entries reported yet.</p>
+                  )}
+                </CardContent>
+              </Card>
 
-              {/* Deductions breakdown */}
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-                <Card className="glass border-white/5 shadow-2xl h-full overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl" />
-                  <CardHeader>
-                    <CardTitle className="font-display text-2xl font-black flex items-center gap-3">
-                      <Layers className="h-6 w-6 text-primary" />
-                      Efficiency Clusters
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      {deductionItems.length > 0 ? (
-                        deductionItems.map((item, i) => (
-                          <motion.div 
-                            key={item.label} 
-                            initial={{ opacity: 0, x: 10 }} 
-                            animate={{ opacity: 1, x: 0 }} 
-                            transition={{ delay: 0.6 + (i * 0.05) }}
-                            className="flex justify-between items-center p-3 rounded-2xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors"
-                          >
-                            <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">{item.label}</span>
-                            <span className="text-sm font-black text-foreground">{fmt(item.value)}</span>
-                          </motion.div>
-                        ))
-                      ) : (
-                        <p className="text-center py-8 text-sm font-bold text-muted-foreground italic opacity-50">No efficiency vectors indexed.</p>
-                      )}
-                      <div className="flex justify-between items-center p-4 mt-6 rounded-2xl border-2 border-secondary/20 bg-secondary/5">
-                        <span className="text-sm font-black uppercase tracking-widest text-secondary">Aggregate Savings</span>
-                        <span className="text-lg font-black text-secondary font-display">{fmt(totalDeductions)}</span>
+              {/* Deductions Breakdown */}
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardHeader className="pb-3 border-b">
+                  <CardTitle className="text-base font-semibold text-slate-900">Deductions & Exemptions</CardTitle>
+                  <CardDescription className="text-xs">Deductions applied under Old Tax Regime</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-3">
+                  {deductionItems.length > 0 ? (
+                    <div className="space-y-2.5">
+                      {deductionItems.map((item) => (
+                        <div key={item.label} className="flex justify-between items-center py-2 px-3 rounded-md bg-slate-50 border border-slate-100 text-xs">
+                          <span className="font-medium text-slate-700">{item.label}</span>
+                          <span className="font-semibold text-emerald-700">{fmt(item.value)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between items-center p-3 rounded-md bg-emerald-50/60 border border-emerald-100 text-xs mt-3">
+                        <span className="font-semibold text-slate-900">Total Deductions Claimed</span>
+                        <span className="font-bold text-emerald-700 text-sm">{fmt(totalDeductions)}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                  ) : (
+                    <p className="text-xs text-slate-400 py-6 text-center italic">No deductions entered yet.</p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Regime comparison */}
+            {/* Regime Recommendation Card */}
             {analysis && (
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-                <Card className="glass border-primary/20 shadow-2xl overflow-hidden relative">
-                  <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
-                  <CardHeader>
-                    <CardTitle className="font-display text-2xl font-black flex items-center gap-3">
-                      <ShieldCheck className="h-6 w-6 text-primary" />
-                      Optimal Regime Protocol
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
-                    <div className="grid grid-cols-2 gap-8">
-                      <div className={`p-8 rounded-[2.5rem] transition-all duration-700 relative overflow-hidden ${analysis.recommended_regime === "old" ? "bg-primary/10 ring-2 ring-primary/40" : "bg-white/5 border border-white/5 opacity-40 grayscale"}`}>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-3">Legacy Framework</p>
-                        <p className="text-4xl font-black font-display text-foreground">{fmt(analysis.old_regime_tax)}</p>
+              <Card className="shadow-sm border-slate-200 bg-white">
+                <CardHeader className="pb-3 border-b">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-primary" />
+                        Final Regime Recommendation
+                      </CardTitle>
+                      <CardDescription className="text-xs">Comparing Section 115BAC (New) vs Chapter VI-A (Old)</CardDescription>
+                    </div>
+                    <Badge className="bg-emerald-600 text-white font-semibold text-xs">
+                      Saves ₹{Math.abs((analysis.old_regime_tax || 0) - (analysis.new_regime_tax || 0)).toLocaleString("en-IN")}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-5 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className={`p-4 rounded-lg border ${analysis.recommended_regime === "old" ? "border-emerald-500 bg-emerald-50/50" : "border-slate-200 bg-slate-50"}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-500 uppercase">Old Tax Regime</span>
                         {analysis.recommended_regime === "old" && (
-                          <div className="mt-6 flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest bg-primary/20 px-4 py-2 rounded-full w-fit">
-                            <CheckCircle className="h-3.3 w-3.3" /> System Recommended
-                          </div>
+                          <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
+                            <CheckCircle2 className="h-3 w-3 mr-1" /> Recommended
+                          </Badge>
                         )}
                       </div>
-                      <div className={`p-8 rounded-[2.5rem] transition-all duration-700 relative overflow-hidden ${analysis.recommended_regime === "new" ? "bg-primary/10 ring-2 ring-primary/40" : "bg-white/5 border border-white/5 opacity-40 grayscale"}`}>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-3">Next-Gen Architecture</p>
-                        <p className="text-4xl font-black font-display text-foreground">{fmt(analysis.new_regime_tax)}</p>
-                        {analysis.recommended_regime === "new" && (
-                          <div className="mt-6 flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest bg-primary/20 px-4 py-2 rounded-full w-fit">
-                            <CheckCircle className="h-3.3 w-3.3" /> System Recommended
-                          </div>
-                        )}
-                      </div>
+                      <p className="text-2xl font-bold text-slate-900">{fmt(analysis.old_regime_tax)}</p>
+                      <p className="text-xs text-slate-500 mt-1">Includes 80C, 80D, HRA & other deductions</p>
                     </div>
 
-                    {analysis.analysis_summary && (
-                      <div className="p-8 rounded-[2.5rem] bg-indigo-500/[0.03] border border-white/5 relative group">
-                        <div className="absolute top-6 left-6 h-5 w-5 text-indigo-400 opacity-20"><ShieldCheck className="h-full w-full" /></div>
-                        <p className="text-base font-medium text-muted-foreground leading-relaxed pl-8 italic">
-                          "{analysis.analysis_summary}"
-                        </p>
+                    <div className={`p-4 rounded-lg border ${analysis.recommended_regime === "new" ? "border-emerald-500 bg-emerald-50/50" : "border-slate-200 bg-slate-50"}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-500 uppercase">New Tax Regime (Sec 115BAC)</span>
+                        {analysis.recommended_regime === "new" && (
+                          <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
+                            <CheckCircle2 className="h-3 w-3 mr-1" /> Recommended
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
+                      <p className="text-2xl font-bold text-slate-900">{fmt(analysis.new_regime_tax)}</p>
+                      <p className="text-xs text-slate-500 mt-1">Includes standard deduction of ₹75,000</p>
+                    </div>
+                  </div>
+
+                  {analysis.analysis_summary && (
+                    <div className="p-3.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900 leading-relaxed">
+                      <span className="font-semibold">Analysis Summary:</span> {analysis.analysis_summary}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
