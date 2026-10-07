@@ -187,7 +187,47 @@ const DashboardNav = () => {
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 p-4 lg:hidden shadow-lg space-y-2">
+        <div className="fixed inset-x-0 top-16 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 p-4 lg:hidden shadow-xl space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {/* Mobile Profile & Mode controls */}
+          <div className="space-y-3 pb-3 border-b border-slate-100">
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                Taxpayer Profile (Family Hub)
+              </label>
+              <select
+                value={activeProfile}
+                onChange={(e) => {
+                  switchProfile(e.target.value);
+                  setMobileOpen(false);
+                }}
+                className="w-full text-xs font-semibold bg-slate-50 text-slate-800 border border-slate-200 rounded-lg p-2 outline-none cursor-pointer"
+              >
+                {FAMILY_PROFILES.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    👤 {p.name} — {p.pan} ({p.relation})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-slate-600 font-medium">Test & Simulation Scenario:</span>
+              <button
+                type="button"
+                onClick={toggleDemoMode}
+                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors flex items-center gap-1.5 ${
+                  isDemo
+                    ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                    : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <div className={`h-2 w-2 rounded-full ${isDemo ? "bg-blue-600" : "bg-slate-400"}`} />
+                <span>{isDemo ? "Demo Active (Rajesh)" : "Enable Demo"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation Links Grid */}
           <div className="grid grid-cols-2 gap-2">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -200,21 +240,27 @@ const DashboardNav = () => {
                   <div
                     className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium transition-colors ${
                       isActive
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-primary text-white font-semibold shadow-sm"
+                        : "text-slate-700 bg-slate-50/70 hover:bg-slate-100"
                     }`}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
                   </div>
                 </Link>
               );
             })}
           </div>
 
-          <div className="pt-2 border-t flex justify-between items-center text-xs">
-            <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-slate-700 font-medium">
-              Taxpayer Profile
+          {/* Footer actions */}
+          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <Link
+              to="/profile"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-1.5 text-slate-700 font-semibold hover:text-primary p-1"
+            >
+              <User className="h-4 w-4" />
+              <span>Taxpayer Profile</span>
             </Link>
             <Button
               variant="ghost"
@@ -223,13 +269,57 @@ const DashboardNav = () => {
                 handleSignOut();
                 setMobileOpen(false);
               }}
-              className="text-xs text-red-600 hover:bg-red-50"
+              className="text-xs text-red-600 hover:bg-red-50 hover:text-red-700 font-medium h-8"
             >
-              <LogOut className="h-3 w-3 mr-1" /> Sign Out
+              <LogOut className="h-3.5 w-3.5 mr-1" /> Sign Out
             </Button>
           </div>
         </div>
       )}
+
+      {/* Sleek Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-3 flex justify-around items-center shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+        {[
+          { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+          { path: "/form16", label: "Form 16", icon: Layers },
+          { path: "/reconciliation", label: "AIS", icon: FileCheck },
+          { path: "/capital-gains", label: "Cap Gains", icon: TrendingUp },
+          { path: "/copilot", label: "Copilot", icon: Sparkles },
+        ].map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setMobileOpen(false)}
+              className="flex flex-col items-center justify-center py-1 px-2 rounded-md transition-colors"
+            >
+              <item.icon
+                className={`h-4 w-4 transition-colors ${
+                  isActive ? "text-primary" : "text-slate-500"
+                }`}
+              />
+              <span
+                className={`text-[10px] mt-0.5 tracking-tight ${
+                  isActive ? "text-primary font-bold" : "text-slate-500 font-medium"
+                }`}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-md transition-colors text-slate-500 hover:text-slate-900"
+        >
+          <Menu className={`h-4 w-4 ${mobileOpen ? "text-primary" : "text-slate-500"}`} />
+          <span className={`text-[10px] mt-0.5 font-medium ${mobileOpen ? "text-primary font-bold" : ""}`}>
+            More
+          </span>
+        </button>
+      </div>
     </>
   );
 };

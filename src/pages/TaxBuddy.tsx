@@ -126,7 +126,7 @@ const TaxBuddy = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-4xl py-8 space-y-6">
+      <main className="container max-w-4xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="border-b pb-5">
           <div className="flex items-center gap-2 mb-1">
@@ -134,8 +134,8 @@ const TaxBuddy = () => {
               <Brain className="h-3 w-3 mr-1 text-primary" /> Tax Advisory Assistant
             </Badge>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">TaxBuddy Advisor</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">TaxBuddy Advisor</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Answer a few quick questions to identify eligible tax deductions, confirm your optimal tax regime, and prepare your ITR filing.
           </p>
         </div>

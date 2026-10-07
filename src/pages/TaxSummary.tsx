@@ -73,23 +73,23 @@ const TaxSummary = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-6xl py-8 space-y-6">
+      <main className="container max-w-6xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <Calculator className="h-3 w-3 mr-1" /> Assessment Statement
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Consolidated Tax Summary</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Consolidated Tax Summary</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Official summary of reported gross income, allowable Chapter VI-A deductions, and net tax liability (FY 2024-25 / AY 2025-26).
             </p>
           </div>
           <div className="flex gap-2">
-            <Link to="/analysis">
-              <Button variant="outline" size="sm" className="font-medium text-xs">
+            <Link to="/tax-analysis" className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto font-medium text-xs">
                 Edit Financial Data
               </Button>
             </Link>

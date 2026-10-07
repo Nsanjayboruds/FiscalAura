@@ -193,7 +193,7 @@ const Documents = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-6xl py-8 space-y-6">
+      <main className="container max-w-6xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="border-b pb-5">
           <div className="flex items-center gap-2 mb-1">
@@ -201,15 +201,15 @@ const Documents = () => {
               <FileText className="h-3 w-3 mr-1" /> Form 16 & Tax Documents
             </Badge>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tax Document Vault</h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Tax Document Vault</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
             Upload Form 16 (Part A & B), monthly payslips, and investment receipts (80C, 80D, HRA) for automated extraction and tax regime comparison.
           </p>
         </div>
 
         {/* Upload Card */}
         <Card className="shadow-sm border-slate-200 bg-white">
-          <CardContent className="p-8 text-center space-y-4">
+          <CardContent className="p-5 sm:p-8 text-center space-y-4">
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <Upload className="h-6 w-6" />
             </div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowRight, 
@@ -15,7 +16,9 @@ import {
   Info,
   Building2,
   Briefcase,
-  UserCheck
+  UserCheck,
+  Menu,
+  X
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +32,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
@@ -79,46 +83,114 @@ const Index = () => {
           </nav>
 
           {/* User Auth Buttons */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => navigate("/auth")}
-              className="text-sm font-medium"
+              className="hidden sm:inline-flex text-sm font-medium"
             >
               Sign In
             </Button>
             <Button
               size="sm"
               onClick={() => navigate("/auth")}
-              className="font-semibold text-sm px-4 shadow-sm"
+              className="font-semibold text-xs sm:text-sm px-3 sm:px-4 shadow-sm"
             >
-              Start Filing Free
+              Start Free
+            </Button>
+            {/* Mobile Menu Hamburger */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden h-9 w-9 text-slate-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-background border-b border-border px-4 py-3 space-y-2 shadow-lg animate-in slide-in-from-top-2">
+            <nav className="flex flex-col space-y-2 text-sm font-medium text-muted-foreground">
+              <a 
+                href="#services" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-md hover:bg-muted text-foreground transition-colors"
+              >
+                Filing Services
+              </a>
+              <a 
+                href="#comparator" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-md hover:bg-muted text-foreground transition-colors"
+              >
+                Regime Comparator
+              </a>
+              <a 
+                href="#slabs" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-md hover:bg-muted text-foreground transition-colors"
+              >
+                Tax Slabs
+              </a>
+              <a 
+                href="#faq" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-md hover:bg-muted text-foreground transition-colors"
+              >
+                FAQs
+              </a>
+              <div className="pt-2 border-t border-border flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full text-xs font-semibold"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/auth");
+                  }}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="w-full text-xs font-semibold"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/auth");
+                  }}
+                >
+                  Get Started
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-12 pb-16 md:pt-16 md:pb-20 bg-muted/20 border-b border-border">
+      <section className="relative pt-10 pb-14 md:pt-16 md:pb-20 bg-muted/20 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-10 items-center">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             
             {/* Left Column: Hero Copy */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
               <div>
-                <Badge variant="secondary" className="px-3 py-1 font-semibold text-xs gap-1.5 border border-border">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                <Badge variant="secondary" className="px-2.5 sm:px-3 py-1 font-semibold text-[11px] sm:text-xs gap-1.5 border border-border">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                   AI-Powered Tax Intelligence & Compliance Platform for India
                 </Badge>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
                 FiscalAura <br />
                 <span className="text-primary">AI Tax Intelligence for India.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
                 Understand your taxes. Reconcile your financial data across Form 16, AIS, and Form 26AS. Find potential tax opportunities and make better financial decisions.
               </p>
 
@@ -146,7 +218,7 @@ const Index = () => {
               </div>
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-border text-xs text-muted-foreground">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-border text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
                   <span>100% Calculation Guarantee</span>
@@ -415,82 +487,86 @@ const Index = () => {
 
                 {/* New Regime Slabs */}
                 <TabsContent value="new">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs font-bold">Total Income Range</TableHead>
-                        <TableHead className="text-xs font-bold">Tax Rate</TableHead>
-                        <TableHead className="text-xs font-bold text-right">Applicable Rebate / Notes</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">Up to ₹3,00,000</TableCell>
-                        <TableCell className="text-xs">Nil</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Basic Exemption Limit</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹3,00,001 – ₹7,00,000</TableCell>
-                        <TableCell className="text-xs">5%</TableCell>
-                        <TableCell className="text-xs text-right text-emerald-600 font-medium">Rebate u/s 87A up to ₹7L (Tax = Nil)</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹7,00,001 – ₹10,00,000</TableCell>
-                        <TableCell className="text-xs">10%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Marginal relief applicable</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹10,00,001 – ₹12,00,000</TableCell>
-                        <TableCell className="text-xs">15%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Standard deduction ₹75,000</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹12,00,001 – ₹15,00,000</TableCell>
-                        <TableCell className="text-xs">20%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Budget 2024 revised slab</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">Above ₹15,00,000</TableCell>
-                        <TableCell className="text-xs font-bold text-primary">30%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Surcharge applicable if income &gt; ₹50L</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[480px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs font-bold">Total Income Range</TableHead>
+                          <TableHead className="text-xs font-bold">Tax Rate</TableHead>
+                          <TableHead className="text-xs font-bold text-right">Applicable Rebate / Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">Up to ₹3,00,000</TableCell>
+                          <TableCell className="text-xs">Nil</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Basic Exemption Limit</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹3,00,001 – ₹7,00,000</TableCell>
+                          <TableCell className="text-xs">5%</TableCell>
+                          <TableCell className="text-xs text-right text-emerald-600 font-medium">Rebate u/s 87A up to ₹7L (Tax = Nil)</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹7,00,001 – ₹10,00,000</TableCell>
+                          <TableCell className="text-xs">10%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Marginal relief applicable</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹10,00,001 – ₹12,00,000</TableCell>
+                          <TableCell className="text-xs">15%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Standard deduction ₹75,000</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹12,00,001 – ₹15,00,000</TableCell>
+                          <TableCell className="text-xs">20%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Budget 2024 revised slab</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">Above ₹15,00,000</TableCell>
+                          <TableCell className="text-xs font-bold text-primary">30%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Surcharge applicable if income &gt; ₹50L</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
 
                 {/* Old Regime Slabs */}
                 <TabsContent value="old">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs font-bold">Total Income Range</TableHead>
-                        <TableHead className="text-xs font-bold">Tax Rate</TableHead>
-                        <TableHead className="text-xs font-bold text-right">Applicable Deductions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">Up to ₹2,50,000</TableCell>
-                        <TableCell className="text-xs">Nil</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Basic Exemption Limit (Under 60 yrs)</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹2,50,001 – ₹5,00,000</TableCell>
-                        <TableCell className="text-xs">5%</TableCell>
-                        <TableCell className="text-xs text-right text-emerald-600 font-medium">Rebate u/s 87A up to ₹5L (Tax = Nil)</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">₹5,00,001 – ₹10,00,000</TableCell>
-                        <TableCell className="text-xs">20%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Eligible for 80C, 80D, HRA deductions</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium text-xs">Above ₹10,00,000</TableCell>
-                        <TableCell className="text-xs font-bold text-primary">30%</TableCell>
-                        <TableCell className="text-xs text-right text-muted-foreground">Home loan interest (Sec 24b) allowed</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[480px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs font-bold">Total Income Range</TableHead>
+                          <TableHead className="text-xs font-bold">Tax Rate</TableHead>
+                          <TableHead className="text-xs font-bold text-right">Applicable Deductions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">Up to ₹2,50,000</TableCell>
+                          <TableCell className="text-xs">Nil</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Basic Exemption Limit (Under 60 yrs)</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹2,50,001 – ₹5,00,000</TableCell>
+                          <TableCell className="text-xs">5%</TableCell>
+                          <TableCell className="text-xs text-right text-emerald-600 font-medium">Rebate u/s 87A up to ₹5L (Tax = Nil)</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">₹5,00,001 – ₹10,00,000</TableCell>
+                          <TableCell className="text-xs">20%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Eligible for 80C, 80D, HRA deductions</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium text-xs">Above ₹10,00,000</TableCell>
+                          <TableCell className="text-xs font-bold text-primary">30%</TableCell>
+                          <TableCell className="text-xs text-right text-muted-foreground">Home loan interest (Sec 24b) allowed</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
               </Tabs>
             </CardContent>

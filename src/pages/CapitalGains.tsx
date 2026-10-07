@@ -128,7 +128,7 @@ const CapitalGains = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-7xl py-8 space-y-6">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
@@ -141,14 +141,14 @@ const CapitalGains = () => {
                 Budget 2024 Rates (Sec 111A / 112A)
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Capital Gains Intelligence</h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Capital Gains Intelligence</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
               Import P&L reports from Zerodha, Groww, Upstox, or upload any trade CSV.
               Applies Section 111A STCG (20%) and Section 112A LTCG (12.5% above ₹1.25L exemption) with loss set-off.
             </p>
           </div>
           {report && (
-            <Button variant="outline" size="sm" onClick={clearData} className="text-xs font-medium text-slate-600">
+            <Button variant="outline" size="sm" onClick={clearData} className="text-xs font-medium text-slate-600 self-start sm:self-auto">
               <X className="h-3.5 w-3.5 mr-1.5" /> Clear & Re-upload
             </Button>
           )}
@@ -244,7 +244,7 @@ const CapitalGains = () => {
         {report && (
           <div className="space-y-6">
             {/* KPI Summary Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card className="shadow-sm border-slate-200 bg-white">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-1.5 mb-1">
@@ -365,12 +365,12 @@ const CapitalGains = () => {
             {localTrades.length > 0 && (
               <Card className="shadow-sm border-slate-200 bg-white">
                 <CardHeader className="pb-3 border-b">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <CardTitle className="text-base font-semibold text-slate-900">Realized Trades Ledger</CardTitle>
                       <CardDescription className="text-xs">{localTrades.length} transactions — parsed from {localTrades[0]?.broker || "your"} report</CardDescription>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Badge variant="outline" className="text-[10px] text-amber-800 bg-amber-50 border-amber-200">
                         STCG: {localTrades.filter((t) => !t.is_long_term && t.gain_loss > 0).length} trades
                       </Badge>
@@ -380,8 +380,8 @@ const CapitalGains = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
+                <CardContent className="p-0 overflow-x-auto">
+                  <Table className="min-w-[640px]">
                     <TableHeader className="bg-slate-50">
                       <TableRow>
                         <TableHead className="text-xs font-semibold pl-4">Security</TableHead>

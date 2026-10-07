@@ -107,11 +107,11 @@ const AdvanceTax = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-7xl py-8 space-y-6">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <Calendar className="h-3 w-3 mr-1" /> Statutory Compliance
               </Badge>
@@ -119,8 +119,8 @@ const AdvanceTax = () => {
                 Section 208 & 234A/B/C
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Advance Tax & Penalty Calculator</h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Advance Tax & Penalty Calculator</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
               Track mandatory quarterly tax installments (15-Jun, 15-Sep, 15-Dec, 15-Mar) and compute interest liabilities under Sections 234A, 234B, and 234C.
             </p>
           </div>
@@ -204,8 +204,8 @@ const AdvanceTax = () => {
                   Section 234C levies 1% monthly interest for deferment of each installment threshold.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <Table>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table className="min-w-[680px]">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead className="text-xs font-semibold">Quarter & Due Date</TableHead>

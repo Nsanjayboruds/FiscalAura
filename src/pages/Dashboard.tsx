@@ -189,6 +189,7 @@ const Dashboard = () => {
   }));
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) return null;
     const RADIAN = Math.PI / 180;
     const radius = outerRadius + 22;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -214,11 +215,11 @@ const Dashboard = () => {
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
 
-      <main className="container max-w-7xl py-8 space-y-6 px-4 sm:px-6 lg:px-8">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header with Taxpayer Status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <ShieldCheck className="h-3 w-3 mr-1 text-primary" /> AY 2025-26 Active Assessment
               </Badge>
@@ -228,23 +229,23 @@ const Dashboard = () => {
                 </Badge>
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Welcome back, {firstName}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Institutional tax intelligence summary for Financial Year 2024-25 (Assessment Year 2025-26).
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <Link to="/reports">
-              <Button variant="outline" size="sm" className="text-xs font-medium">
-                <FileText className="h-3.5 w-3.5 mr-1.5" /> Download Tax Statement
+          <div className="flex flex-wrap sm:flex-nowrap gap-2">
+            <Link to="/reports" className="flex-1 sm:flex-initial">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs font-medium">
+                <FileText className="h-3.5 w-3.5 mr-1.5" /> Statement
               </Button>
             </Link>
-            <Link to="/copilot">
-              <Button size="sm" className="bg-primary text-white text-xs font-medium">
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Ask Tax Copilot
+            <Link to="/copilot" className="flex-1 sm:flex-initial">
+              <Button size="sm" className="w-full sm:w-auto bg-primary text-white text-xs font-medium">
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Tax Copilot
               </Button>
             </Link>
           </div>

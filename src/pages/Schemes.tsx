@@ -109,17 +109,17 @@ const Schemes = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-7xl py-8 space-y-6">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <Landmark className="h-3 w-3 mr-1" /> Chapter VI-A Deductions
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tax Saving Investment Schemes</h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Tax Saving Investment Schemes</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
               Official tax-saving instruments under Section 80C, 80CCD, and 80D to legally minimize your liability under the Old Tax Regime.
             </p>
           </div>
@@ -127,7 +127,7 @@ const Schemes = () => {
           <Button 
             onClick={handleGetPersonalized} 
             disabled={loading}
-            className="bg-primary hover:bg-primary/90 text-white font-medium shadow-sm shrink-0"
+            className="bg-primary hover:bg-primary/90 text-white font-medium shadow-sm shrink-0 w-full sm:w-auto"
           >
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Brain className="h-4 w-4 mr-2" />}
             Generate Personalized Advice

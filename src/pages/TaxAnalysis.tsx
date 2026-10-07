@@ -89,7 +89,7 @@ const TaxAnalysis = () => {
   return (
     <div className="min-h-screen bg-background">
       <DashboardNav />
-      <div className="container py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>

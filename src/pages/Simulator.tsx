@@ -95,7 +95,7 @@ const Simulator = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-7xl py-8 space-y-6">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="border-b pb-5">
           <div className="flex items-center gap-2 mb-1">
@@ -103,8 +103,8 @@ const Simulator = () => {
               <Activity className="h-3 w-3 mr-1" /> Tax Simulator
             </Badge>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tax Regime & Savings Simulator</h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Tax Regime & Savings Simulator</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
             Simulate your net tax liability in real time. Adjust your investments in 80C, 80CCD (NPS), and 80D to see whether the Old or New Regime saves more money.
           </p>
         </div>
@@ -114,7 +114,7 @@ const Simulator = () => {
           <div className="lg:col-span-7">
             <Card className="shadow-sm border-slate-200 bg-white h-full flex flex-col justify-between">
               <CardHeader className="border-b pb-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-primary" />
@@ -122,13 +122,13 @@ const Simulator = () => {
                     </CardTitle>
                     <CardDescription className="text-xs">Based on simulated allowable deductions</CardDescription>
                   </div>
-                  <Badge variant={oldTax <= newTax ? "default" : "secondary"} className="text-xs font-semibold">
+                  <Badge variant={oldTax <= newTax ? "default" : "secondary"} className="text-xs font-semibold self-start sm:self-auto">
                     {oldTax <= newTax ? "Old Regime Saves More" : "New Regime Saves More"}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="h-[320px] w-full">
+                <div className="h-[280px] sm:h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
@@ -155,7 +155,7 @@ const Simulator = () => {
                   </ResponsiveContainer>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className={`p-4 rounded-lg border ${oldTax <= newTax ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-slate-200"}`}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-semibold uppercase text-slate-500">Old Tax Regime</span>

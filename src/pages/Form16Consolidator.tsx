@@ -131,12 +131,12 @@ const Form16Consolidator = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-7xl py-8 space-y-6">
+      <main className="container max-w-7xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <Briefcase className="h-3 w-3 mr-1" /> Job-Switcher Multi-Employer Intelligence
               </Badge>
@@ -144,12 +144,12 @@ const Form16Consolidator = () => {
                 Deduplication Active
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Multiple Form 16 Consolidation</h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Multiple Form 16 Consolidation</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
               Changed jobs during the financial year? Consolidate multiple Form 16s, deduplicate overlapping standard deductions (Section 16(ia)), and compute your true consolidated tax liability.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex border border-slate-200 rounded-lg overflow-hidden text-xs">
               {(["new", "old"] as const).map((r) => (
                 <button
@@ -325,7 +325,7 @@ const Form16Consolidator = () => {
                 </div>
               </CardHeader>
               <CardContent className="pt-5 space-y-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
                     <span className="text-[11px] font-semibold text-slate-500 uppercase">Combined Gross Salary</span>
                     <p className="text-xl font-bold text-slate-900 mt-1">{fmt(result.total_gross_salary)}</p>
@@ -354,7 +354,7 @@ const Form16Consolidator = () => {
                 </div>
 
                 {/* Summary Row */}
-                <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
                   <div>
                     <span className="text-slate-500">Taxable Salary</span>
                     <p className="font-bold text-slate-900 mt-0.5">{fmt(result.consolidated_taxable_salary)}</p>
@@ -372,8 +372,8 @@ const Form16Consolidator = () => {
                 {/* Employer-by-Employer Ledger */}
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Employer-by-Employer Ledger</h3>
-                  <div className="rounded-lg border border-slate-200 overflow-hidden">
-                    <Table>
+                  <div className="rounded-lg border border-slate-200 overflow-x-auto">
+                    <Table className="min-w-[620px]">
                       <TableHeader className="bg-slate-50">
                         <TableRow>
                           <TableHead className="text-xs font-semibold">Employer</TableHead>

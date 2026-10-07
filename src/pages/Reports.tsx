@@ -93,11 +93,11 @@ const Reports = () => {
         <DashboardNav />
       </div>
 
-      <main className="container max-w-4xl py-8 space-y-6">
+      <main className="container max-w-4xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Actions Bar (Hidden during print) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5 print:hidden">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
                 <FileText className="h-3 w-3 mr-1" /> Formal Assessment Statement
               </Badge>
@@ -105,8 +105,8 @@ const Reports = () => {
                 AY 2025-26 Compliant
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tax Assessment Report</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Tax Assessment Report</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Download official computation statement or export versioned ITR-1 / ITR-2 JSON for e-filing.
             </p>
           </div>
@@ -117,20 +117,20 @@ const Reports = () => {
               size="sm"
               onClick={() => handleDownloadITR("ITR-1")}
               disabled={exporting}
-              className="text-xs font-medium h-9"
+              className="text-xs font-medium h-9 flex-1 sm:flex-initial"
             >
-              <FileJson className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Export ITR-1 JSON
+              <FileJson className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> ITR-1 JSON
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleDownloadITR("ITR-2")}
               disabled={exporting}
-              className="text-xs font-medium h-9"
+              className="text-xs font-medium h-9 flex-1 sm:flex-initial"
             >
-              <FileJson className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> Export ITR-2 JSON
+              <FileJson className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> ITR-2 JSON
             </Button>
-            <Button onClick={handlePrint} className="bg-primary text-white text-xs font-medium h-9">
+            <Button onClick={handlePrint} className="bg-primary text-white text-xs font-medium h-9 w-full sm:w-auto">
               <Printer className="h-3.5 w-3.5 mr-1.5" /> Print / Save as PDF
             </Button>
           </div>
@@ -157,9 +157,9 @@ const Reports = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white p-8 sm:p-12 rounded-xl border border-slate-200 shadow-sm print:border-none print:shadow-none print:p-0 space-y-8 text-slate-900">
+          <div className="bg-white p-4 sm:p-8 md:p-12 rounded-xl border border-slate-200 shadow-sm print:border-none print:shadow-none print:p-0 space-y-8 text-slate-900">
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-slate-900/10 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-900/10 pb-6">
             <div>
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-lg bg-primary text-white font-bold">
@@ -169,7 +169,7 @@ const Reports = () => {
               </div>
               <p className="text-xs text-slate-500 mt-1">Tax Intelligence & Compliance Platform • India</p>
             </div>
-            <div className="text-right text-xs">
+            <div className="sm:text-right text-xs">
               <strong className="text-slate-900 text-sm block">Tax Assessment Statement</strong>
               <span className="text-slate-500">Date Generated: {currentDate}</span>
               <span className="text-slate-500 block">Assessment Year: 2025-26 (FY 2024-25)</span>
@@ -177,7 +177,7 @@ const Reports = () => {
           </div>
 
           {/* Taxpayer Information */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-slate-50 border border-slate-200/80 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 p-4 rounded-lg bg-slate-50 border border-slate-200/80 text-xs">
             <div>
               <span className="text-slate-500 block">Taxpayer Name</span>
               <strong className="text-slate-900 text-sm">{taxpayer.full_name}</strong>
@@ -199,8 +199,8 @@ const Reports = () => {
           {/* Income Summary Table */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">1. Statement of Gross Total Income</h3>
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <Table>
+            <div className="border border-slate-200 rounded-lg overflow-x-auto">
+              <Table className="min-w-[480px]">
                 <TableHeader className="bg-slate-50">
                   <TableRow>
                     <TableHead className="text-xs font-semibold text-slate-700">Head of Income</TableHead>
@@ -256,8 +256,8 @@ const Reports = () => {
           {/* Deductions & Net Tax Comparison */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">2. Tax Computation & Regime Comparison</h3>
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <Table>
+            <div className="border border-slate-200 rounded-lg overflow-x-auto">
+              <Table className="min-w-[500px]">
                 <TableHeader className="bg-slate-50">
                   <TableRow>
                     <TableHead className="text-xs font-semibold text-slate-700">Particulars</TableHead>

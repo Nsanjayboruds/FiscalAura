@@ -81,10 +81,10 @@ const Copilot = () => {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <DashboardNav />
-      <main className="container max-w-5xl py-8 space-y-6">
+      <main className="container max-w-5xl py-6 sm:py-8 space-y-6 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
         {/* Header */}
         <div className="border-b pb-5">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 font-semibold text-xs">
               <Brain className="h-3 w-3 mr-1" /> Context-Aware Tax Copilot
             </Badge>
@@ -92,15 +92,15 @@ const Copilot = () => {
               Live Return Context Loaded
             </Badge>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">AI Tax Copilot</h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">AI Tax Copilot</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
             Ask specific questions about your tax return. Copilot analyzes your exact figures, Form 16s, and AIS reconciliation to give legal, mathematically sound explanations.
           </p>
         </div>
 
         {/* Chat Card */}
-        <Card className="shadow-sm border-slate-200 bg-white flex flex-col h-[600px]">
-          <CardHeader className="py-3 px-6 border-b flex flex-row items-center justify-between">
+        <Card className="shadow-sm border-slate-200 bg-white flex flex-col h-[calc(100vh-240px)] min-h-[460px] max-h-[640px]">
+          <CardHeader className="py-3 px-4 sm:px-6 border-b flex flex-row items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-lg bg-primary/10 text-primary">
                 <Brain className="h-4 w-4" />
@@ -110,15 +110,15 @@ const Copilot = () => {
                 <CardDescription className="text-[11px]">FY 2024-25 (AY 2025-26) Statutory Engine</CardDescription>
               </div>
             </div>
-            <span className="text-[11px] text-slate-400 font-medium">Deterministic Context</span>
+            <span className="hidden sm:inline-block text-[11px] text-slate-400 font-medium">Deterministic Context</span>
           </CardHeader>
 
           {/* Messages Feed */}
-          <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
+          <CardContent className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4">
             {messages.map((m, idx) => (
               <div
                 key={idx}
-                className={`flex gap-3 text-xs leading-relaxed ${
+                className={`flex gap-2 sm:gap-3 text-xs leading-relaxed ${
                   m.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
@@ -128,7 +128,7 @@ const Copilot = () => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-xl p-4 ${
+                  className={`max-w-[88%] sm:max-w-[80%] rounded-xl p-3 sm:p-4 ${
                     m.role === "user"
                       ? "bg-primary text-white font-medium"
                       : "bg-slate-100/90 text-slate-800 border border-slate-200/80 prose prose-slate prose-sm max-w-none"
