@@ -22,11 +22,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { clearDemoSessionData } from "@/lib/demoState";
 
 export const FAMILY_PROFILES = [
-  { id: "self", name: "Rajesh (Self)", relation: "Primary", pan: "ABCPS1234F" },
-  { id: "spouse", name: "Priya (Spouse)", relation: "Consultant", pan: "XYZPS5678K" },
-  { id: "parent", name: "Ramesh (Parent)", relation: "Senior Citizen", pan: "PQRPS9012M" },
+  { id: "self", name: "My Profile", relation: "Primary", pan: "Profile" },
+  { id: "spouse", name: "Spouse", relation: "Consultant", pan: "Profile" },
+  { id: "parent", name: "Parent", relation: "Senior Citizen", pan: "Profile" },
 ];
 
 const navItems = [
@@ -78,6 +79,7 @@ const DashboardNav = () => {
   };
 
   const handleSignOut = async () => {
+    clearDemoSessionData();
     await supabase.auth.signOut();
     navigate("/");
   };

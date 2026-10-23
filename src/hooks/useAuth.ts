@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile } from "@/lib/api";
+import { clearDemoSessionData } from "@/lib/demoState";
 import type { User } from "@supabase/supabase-js";
 
 const IS_MOCK = import.meta.env.VITE_MOCK_SUPABASE === "true";
@@ -39,6 +40,7 @@ export function useAuth(redirectIfNoProfile = true) {
         navigate("/auth");
         return;
       }
+      clearDemoSessionData();
       setUser(session.user);
       // Fetch profile after auth state set
       setTimeout(() => fetchProfileData(), 0);
@@ -50,6 +52,7 @@ export function useAuth(redirectIfNoProfile = true) {
         setLoading(false);
         return;
       }
+      clearDemoSessionData();
       setUser(session.user);
       fetchProfileData();
     });
