@@ -61,10 +61,11 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Recharts.
-- **Backend**: Go 1.22+, Chi Router, CORS, Supabase REST/Storage client.
-- **Tax Engine**: Custom Go package (`backend/services/taxengine`) with 100% test coverage.
-- **AI Infrastructure**: Unified `AIClient` with automated failover between Groq and Gemini.
+- **Backend**: **Go (Golang) 1.22+**, Chi Router, CORS, Supabase REST/Storage client.
+  > *Note: The entire backend & calculation engine is written in **Go (Golang)** for sub-millisecond calculation speeds, type safety, and zero-runtime-overhead deterministic financial precision.*
+- **Tax Engine**: Pure Go (Golang) deterministic package (`backend/services/taxengine`) with 100% unit test coverage.
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Recharts *(uses Node.js 18+ only for build and dev server)*.
+- **AI Infrastructure**: Unified `AIClient` in Go with automated failover between Groq (Qwen 2.5) and Google Gemini.
 - **Database & Auth**: Supabase PostgreSQL with Row Level Security (RLS) and encrypted document storage.
 
 ---
@@ -72,9 +73,9 @@ graph TD
 ## 💻 Local Development Setup
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Go 1.22+
-- Supabase Project credentials
+- **Go 1.22+ (Golang)** *(required for the backend)*
+- **Node.js 18+ and npm** *(required only for frontend dev server & build)*
+- **Supabase Project credentials**
 
 ### 1. Environment Configuration
 
@@ -102,14 +103,14 @@ MOCK_SUPABASE=false
 
 ### 2. Run the Application
 
-#### Start the Go Backend:
+#### Start the Go (Golang) Backend:
 ```bash
 cd backend
 go mod download
 go test -v ./services/taxengine/...
 go run main.go
 ```
-The backend starts on `http://localhost:3001`.
+The Go backend starts on `http://localhost:3001`.
 
 #### Start the Frontend:
 ```bash
@@ -122,7 +123,7 @@ Open `http://localhost:8081` in your browser.
 
 ## 🧪 Testing
 
-Run backend deterministic tax engine unit tests:
+Run backend deterministic tax engine unit tests in Go (Golang):
 ```bash
 cd backend
 go test -v ./services/taxengine/...
@@ -137,5 +138,6 @@ npm run build
 
 ## 🔒 Security & Compliance
 - **Data Isolation**: Multi-tenant database protected by PostgreSQL Row Level Security (RLS).
-- **Zero API Key Leakage**: Groq and Gemini API keys are strictly retained server-side.
+- **Zero API Key Leakage**: Groq and Gemini API keys are strictly retained server-side within the Go backend.
 - **Statutory Notice**: FiscalAura provides informational computations in accordance with the Indian Income Tax Act, 1961 and does not replace certified professional legal or chartered accountancy representation.
+
